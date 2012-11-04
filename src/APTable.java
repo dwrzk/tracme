@@ -2,25 +2,69 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 
+/**
+ * Creates and loads an AP table for a specified region. Once loaded, the main
+ * function of this class is to map given AP BSSID's into an ID given by the AP
+ * table file. New AP's can be automatically added to the table which will
+ * increment the ID by 1.
+ * 
+ * @author James Humphrey
+ */
 public class APTable
 {
+   /**
+    * Creates and initializes an empty AP table.
+    */
    public APTable()
    {
       // Create and initialize the AP table to 0.
       aps = new ArrayList< AccessPoint >();
       aps.clear();
+
+      tableName = "";
    }
 
-   public void createTable( String tableName )
-   {
-      ///File newTableFile = new File( tableName );
-   }
-
+   /**
+    * Adds a new access point to the table.
+    * 
+    * @param newAp
+    *           The new AP to be added to the table
+    */
    public void addAPToTable( AccessPoint newAp )
    {
+      // Get the ID number of the last entry in the table (should be the highest value).
+      int topID = 0;
       ;
+
+      // The first AP added should always begin with a value of 1.
+      if( aps.size() > 0 )
+      {
+         topID = aps.get( aps.size() - 1 ).getID();
+      }
+
+      // Increment the next ID so it is unique to the table.
+      newAp.setID( topID + 1 );
+
+      // Add the new AP to the loaded table.
+      aps.add( newAp );
+
+      // Copy the new AP to the table file.
+      WriteFile write = new WriteFile( tableName, true );
+      write.writeToFile( newAp.getID() + " " + newAp.getBSSID() + "\n" );
+
+      System.out.println( "Added new AP to table with id " + newAp.getID() + " and BSSID " + newAp.getBSSID() );
    }
 
+   /**
+    * Iterates through each AP in the provided list and maps its BSSID to the
+    * corresponding ID value in the AP table file.
+    * 
+    * @param apList
+    *           The list of access points to map
+    * @param autoIncludeNew
+    *           Indicates if you want to automatically include each AP into the
+    *           table file if no mapping is found (new AP)
+    */
    public void mapAPsToID( ArrayList< AccessPoint > apList, boolean autoIncludeNew )
    {
       for( int i = 0; i < apList.size(); i++ )
@@ -31,6 +75,8 @@ public class APTable
             {
                // Set the ID of the mapped AP in the list.
                apList.get( i ).setID( aps.get( j ).getID() );
+               System.out.println( "Value mapped with id " + apList.get( i ).getID() + " and BSSID "
+                     + apList.get( i ).getBSSID() );
                break;
             }
          }
@@ -48,14 +94,24 @@ public class APTable
             else
             {
                // Prompt the user if he wants the program to save the access point to the table.///
+               addAPToTable( apList.get( i ) );
             }
          }
       }
    }
 
-   ///This function assumes the data is in the correct format as it does no error checking on format.
-   public int loadTable( String tableName )
+   /**
+    * Loads each registered access point from the AP table into memory. This
+    * function assumes the data is in the correct format as it does no error
+    * checking on format.
+    * 
+    * @param tableName
+    *           The file name of the AP table to load from
+    */
+   public void loadTable( String tableName )
    {
+      this.tableName = tableName;
+
       // Stream to read the table file.
       FileInputStream fin;
 
@@ -86,29 +142,46 @@ public class APTable
             aps.add( newAp );
          }
 
+         // Output the loaded AP table for reference.
+         System.out.println( "Loaded AP table:\n" + this + "\n" );
+
          // Close the input stream.
          fin.close();
       }
       catch( IOException e )
       {
          System.out.println( "Unable to read from file " + tableName + ". Do you want to create a file by that name?" );
-         return -1;
       }
       catch( Exception e )
       {
          System.out.println( "Bad read - generic unkown error - try checking file format" );
-         return -1;
       }
-
-      // Return 0 on success.
-      return 0;
    }
 
+   /**
+    * Accessor method for the list of access points loaded in from the table.
+    * 
+    * @return The array list of known access points.
+    */
    public ArrayList< AccessPoint > getAPTable()
    {
       return aps;
    }
 
-   private ArrayList< AccessPoint > aps; // A list of APs stored in the table.
+   /**
+    * Outputs the ID and BSSID of every AP in the table for each line.
+    */
+   public String toString()
+   {
+      String tableStr = "";
+      for( int i = 0; i < aps.size(); i++ )
+      {
+         tableStr += aps.get( i ).getID() + " " + aps.get( i ).getBSSID() + "\n";
+      }
 
+      return tableStr;
+   }
+
+   private ArrayList< AccessPoint > aps; // A list of APs stored in the table.
+   private String tableName; // The file name of the AP table that is loaded.
 }
