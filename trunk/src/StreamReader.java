@@ -1,25 +1,32 @@
-////Reference: javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html?page=4
-////Author: Michael C. Daconta
-///import java.util.*;
 import java.io.*;
 
+/**
+ * A stream reader on a separate thread that is capable of reading the output of
+ * programs that are run on the command line (stdout). This class is based on
+ * code written by Michael C. Daconta at
+ * javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html?page=4.
+ * 
+ * @author James Humphrey
+ */
 public class StreamReader extends Thread
 {
-
-   public StreamReader( InputStream is, String type )
-   {
-      this( is, type, null );
-   }
-
-   public StreamReader( InputStream is, String type, OutputStream redirect )
+   /**
+    * Creates and initializes the stream reader with the associated input
+    * stream.
+    * 
+    * @param is
+    *           The input stream to read from and record
+    */
+   public StreamReader( InputStream is )
    {
       this.is = is;
-      this.type = type;
-      this.os = redirect;
-
       out = "";
    }
 
+   /**
+    * The main thread that records everything on the output stream until the
+    * stream is exhausted.
+    */
    public void run()
    {
       try
@@ -39,7 +46,6 @@ public class StreamReader extends Thread
             {
                pw.println( line );
             }
-            ///System.out.println( type + ">" + line );
             out += line + "\n";
          }
 
@@ -54,14 +60,17 @@ public class StreamReader extends Thread
       }
    }
 
+   /**
+    * Accessor method for the string that contains the output of the stream.
+    * 
+    * @return A string copy of the output data
+    */
    public String getOutputStr()
    {
       return out;
    }
 
-   InputStream is;
-   String type;
-   OutputStream os;
-
-   String out; // A string copy of the output data.
+   private InputStream is; ///
+   private OutputStream os; ///
+   private String out; // A string copy of the output data.
 }

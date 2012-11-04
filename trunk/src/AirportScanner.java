@@ -1,16 +1,30 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 
-///import java.util.regex.Pattern;
-
+/**
+ * Implements the functionality required by the WifiScanner's abstract class.
+ * This works on Mac OS X and calls the hidden airport utility from the command
+ * line. The airport utility scans for current access points and outputs it to
+ * stdout. This class receives that output, parses it, and stores the AP
+ * information into a newly created table returned by the scan method.
+ * 
+ * @author James Humphrey
+ */
 public class AirportScanner extends WifiScanner
 {
+   /**
+    * Initializes the AP list for the current scan.
+    */
    public AirportScanner()
    {
       // Create a list of access points found during this scan.
       apList = new ArrayList< AccessPoint >();
    }
 
+   /**
+    * Runs the command "airport -s" and parses the output into a list of APs
+    * with varying signal strengths.
+    */
    public ArrayList< AccessPoint > scan()
    {
       StreamReader errorReader;
@@ -27,10 +41,10 @@ public class AirportScanner extends WifiScanner
                .exec( "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s" );
 
          // Read any error messages produced by the airport.
-         errorReader = new StreamReader( proc.getErrorStream(), "ERR" );
+         errorReader = new StreamReader( proc.getErrorStream() );
 
          // Read the output produced by the airport scanner.
-         outputReader = new StreamReader( proc.getInputStream(), "OUT" );
+         outputReader = new StreamReader( proc.getInputStream() );
 
          // Start both error and output threads.
          errorReader.start();
@@ -41,8 +55,8 @@ public class AirportScanner extends WifiScanner
          outputReader.join();
 
          // Check if the airport scanner encountered any errors.
-         ///int exitVal = proc.waitFor();
-         ///System.out.println( "Exit Value: " + exitVal );
+         int exitVal = proc.waitFor();
+         System.out.println( "Exit Value: " + exitVal );
 
       }
       catch( Throwable t )
@@ -60,10 +74,17 @@ public class AirportScanner extends WifiScanner
 
    }
 
-   // Parses the airport scanner output line by line and gathers the data on the AP.
-   public void parseAirportStr( String s )
+   /**
+    * Parses the airport scanner output line by line and gathers the data on the
+    * AP.
+    * 
+    * @param str
+    *           The output of running the command "airport -s".
+    */
+   public void parseAirportStr( String str )
    {
-      Scanner sc = new Scanner( s );
+      // Create a new scanner to parse the output string of the airport command.
+      Scanner sc = new Scanner( str );
 
       // Parse through each line of the airport scan output.
       while( sc.hasNextLine() )
@@ -98,16 +119,16 @@ public class AirportScanner extends WifiScanner
          {
             // Create a new access point and fill in the data from the current line.
             AccessPoint ap = new AccessPoint();
-            ap.id = -1;
-            ap.ssid = token1;
-            ap.bssid = lineScan.next();
-            ap.rssi = lineScan.nextInt();
-            ap.channel = lineScan.nextInt();
-            ap.ht = lineScan.next().equals( "Y" ) ? true : false;
-            ap.cc = lineScan.next();
-            ap.security = lineScan.next();
+            ap.setID( -1 );
+            ap.setSSID( token1 );
+            ap.setBSSID( lineScan.next() );
+            ap.setRSSI( Math.abs( lineScan.nextInt() ) );
+            ap.setChannel( lineScan.next() );
+            ap.setHT( lineScan.next().equals( "Y" ) ? true : false );
+            ap.setCC( lineScan.next() );
+            ap.setSecurity( lineScan.next() );
 
-            ///System.out.println(ap);
+            System.out.println( ap );
 
             // Add the access point info to the list to send back to the caller.
             apList.add( ap );
