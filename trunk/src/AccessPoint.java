@@ -184,7 +184,7 @@ public class AccessPoint
    public String toString()
    {
       return new String( id + " " + ssid + " " + bssid + " " + rssi + " " + channel + " " + ht + " " + cc + " "
-            + security );
+            + security + "\n" );
    }
 
    private int id; // Unique id associated with each AP and can be looked up in table.
