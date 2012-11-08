@@ -101,10 +101,10 @@ public class AirportScanner extends WifiScanner
             continue;
          }
 
-         String token1 = lineScan.next();
+         String ssid = lineScan.next();
 
          // Check what the token ////
-         if( token1.equals( "SSID" ) )
+         if( ssid.equals( "SSID" ) || ssid.contains( "HP" ) )/////FIX ""
          {
             ///System.out.println( "Debug: Pattern not found in line - " + lineStr );
             continue;
@@ -120,8 +120,17 @@ public class AirportScanner extends WifiScanner
             // Create a new access point and fill in the data from the current line.
             AccessPoint ap = new AccessPoint();
             ap.setID( -1 );
-            ap.setSSID( token1 );
-            ap.setBSSID( lineScan.next() );
+
+            String bssid = lineScan.next();
+            while( bssid.length() != 17 && bssid.charAt( 2 ) != ':' && bssid.charAt( 5 ) != ':'
+                  && bssid.charAt( 8 ) != ':' && bssid.charAt( 11 ) != ':' && bssid.charAt( 14 ) != ':' )
+            {
+               ssid += bssid;
+               bssid = lineScan.next();
+            }
+
+            ap.setSSID( ssid );
+            ap.setBSSID( bssid );
             ap.setRSSI( Math.abs( lineScan.nextInt() ) );
             ap.setChannel( lineScan.next() );
             ap.setHT( lineScan.next().equals( "Y" ) ? true : false );

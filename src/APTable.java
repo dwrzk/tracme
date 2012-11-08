@@ -15,13 +15,14 @@ public class APTable
    /**
     * Creates and initializes an empty AP table.
     */
-   public APTable()
+   public APTable( boolean debugFile )
    {
       // Create and initialize the AP table to 0.
       aps = new ArrayList< AccessPoint >();
       aps.clear();
 
       tableName = "";
+      writeDebugFile = debugFile;
    }
 
    /**
@@ -53,6 +54,13 @@ public class APTable
       write.writeToFile( newAp.getID() + " " + newAp.getBSSID() + "\n" );
 
       System.out.println( "Added new AP to table with id " + newAp.getID() + " and BSSID " + newAp.getBSSID() );
+      
+      // Check if we want to write out more information about the AP to another debug file.
+      if( writeDebugFile )
+      {
+         WriteFile debugWrite = new WriteFile( tableName + "_debug.txt", true );
+         debugWrite.writeToFile( newAp.toString()  );
+      }
    }
 
    /**
@@ -184,4 +192,5 @@ public class APTable
 
    private ArrayList< AccessPoint > aps; // A list of APs stored in the table.
    private String tableName; // The file name of the AP table that is loaded.
+   boolean writeDebugFile; // Indicates if we want to write another debug file which will include more information about the APs.
 }
