@@ -20,8 +20,9 @@ public class SampleProgram
    public static void main( String[] args )
    {
       // Create the main program and run it.
-      SampleProgram prog = new SampleProgram();
-      prog.run();
+      /*SampleProgram prog = new SampleProgram();
+      prog.run();*/
+	  SamplingFrame frame = new SamplingFrame();
    }
 
    /**
@@ -40,6 +41,8 @@ public class SampleProgram
 
       wifiScanner = null;
       numSamples = 0;
+	  gridx = 1;
+	  gridy = 1;
    }
 
    /**
@@ -54,8 +57,6 @@ public class SampleProgram
       apTableFileName = "calpoly_ap_table.txt";
       numSamples = 5;
       minCutoff = 5000;
-      int gridx = 1;
-      int gridy = 1;
 
       // Get a string name of the current operating system so we can call the correct procedures.
       String osName = System.getProperty( "os.name", null );
@@ -155,6 +156,21 @@ public class SampleProgram
       }
    }
 
+   public void setGridX(int value) {
+      gridx = value;
+   }
+   
+   public void setGridY(int value) {
+      gridy = value;
+   }
+   
+   public void setSampleFile(String file) {
+      sampleFileName = file;
+   }
+   
+   private int gridx; //The X grid location of the sampled area
+   private int gridy; //The Y grid location of the sampled area
+   
    private WriteFile sampleFile; // The raw data file that holds all of the generated samples for the current data set.
    private String sampleFileName; // The name of the raw data file that will hold our samples.
    private WriteFile sampleFileExt; // The extended data file with more information/comments about each sample and about the entire sample set.
