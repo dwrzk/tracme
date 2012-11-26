@@ -14,6 +14,7 @@ import javax.swing.*;
 	private JButton run = new JButton("Sample");
 	private JButton updateFields = new JButton("Update");
 	private JTextField gridXLoc, gridYLoc, outFile;
+        private JTextArea printArea = new JTextArea();
 	private SampleProgram prog;
  
     /**public static void main(String[] args) {
@@ -96,12 +97,12 @@ import javax.swing.*;
 	   gridYLoc.setLocation(50,360);
 	   gridYLoc.setSize(100, 75);
 
-       fieldsPanel.add(updateFields);
-       updateFields.setLocation(50, 600);
-       updateFields.setSize(100, 50);
-       updateFields.addActionListener(this);
+           fieldsPanel.add(updateFields);
+           updateFields.setLocation(50, 600);
+           updateFields.setSize(100, 50);
+           updateFields.addActionListener(this);
 	   
-       return;	   
+           return;	   
 	}
 	
 	public void addToBottomPanel() {
@@ -114,6 +115,9 @@ import javax.swing.*;
 	
 	public void addToMainPanel() {
 	   System.out.println("Add Table To Main Panel Here");
+           mainPanel.add(printArea);
+           printArea.setLocation(10,10);
+           printArea.setSize(500,500);
 	}
 	
 	public void actionPerformed(ActionEvent evt) {
@@ -139,7 +143,7 @@ import javax.swing.*;
 	   else if (evt.getSource() == run) {
 	      /*Sample button was hit */
 	      //Run the program
-		  prog.run();
+		  prog.run(printArea);
 	   }
 	   return;
 	}
