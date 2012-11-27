@@ -65,6 +65,11 @@ public class WriteFile
          System.out.println( "Failed to write to file " + path );
       }
    }
+   
+   public String getPath()
+   {
+      return path;
+   }
 
    private String path; // The file name including its path.
    private boolean append = true; // Indicates if we want to append to the file when writing.

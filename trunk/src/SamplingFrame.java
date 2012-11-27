@@ -143,7 +143,7 @@ import javax.swing.*;
 	   else if (evt.getSource() == run) {
 	      /*Sample button was hit */
 	      //Run the program
-		  prog.run(printArea);
+		  prog.run(/*printArea*/);
 	   }
 	   return;
 	}
