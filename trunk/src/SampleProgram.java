@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Scanner;
 import java.io.File;
+import javax.swing.JTextArea;
 
 /**
  * The main sampling program that handles the GUI, data sampling, data parsing,
@@ -51,7 +52,7 @@ public class SampleProgram
    /**
     * Runs the main program which will handle the sampling data.
     */
-   public void run()
+   public void run( JTextArea printArea )
    {
       // TODO: Manually set these for now (change in GUI).
       sampleFileName = "sample1.txt";
@@ -91,10 +92,20 @@ public class SampleProgram
       sampleFileExt.writeToFile( "// Comment:                 " + fileComment + "\n" );
       sampleFileExt.writeToFile( "//-------------------------------------------------------------------------------\n\n" );
 
+      if( gridLocChanged )
+      {
+         // Grid Location was changed, so output the location information to file.
+         //System.out.println( "###" + gridx + "," + gridy );
+         printArea.append( "###" + gridx + "," + gridy + "\n" );
+         sampleFile.writeToFile( "###" + gridy + "," + gridy + "\n" );
+         sampleFileExt.writeToFile( "###" + gridy + "," + gridy + "\n" );
+         gridLocChanged = false;
+      }
+
       // Output the location information to file.
-      System.out.println( "###" + gridx + "," + gridy );
-      sampleFile.writeToFile( "###" + gridy + "," + gridy + "\n" );
-      sampleFileExt.writeToFile( "###" + gridy + "," + gridy + "\n" );
+      //System.out.println( "###" + gridx + "," + gridy );
+      //sampleFile.writeToFile( "###" + gridy + "," + gridy + "\n" );
+      //sampleFileExt.writeToFile( "###" + gridy + "," + gridy + "\n" );
 
       // Search for the correct scanner depending on the operating system.
       if( osName.equals( "Mac OS X" ) )
@@ -133,15 +144,21 @@ public class SampleProgram
          // Sort the AP list by increasing ID value.
          Collections.sort( aps, new AccessPointIDComparator() );
 
+         String printString = new String();
          // Write the current sample to the file.
          for( int j = 0; j < aps.size(); j++ )
          {
-            System.out.print( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
+            printString = aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";";
+            printArea.append( printString );
+            printArea.updateUI();
+            //System.out.print( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
             sampleFile.writeToFile( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
             sampleFileExt.writeToFile( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
          }
 
          // Move to the next line.
+         printArea.append( "\n" );
+
          System.out.println( "" );
          sampleFile.writeToFile( "\n" );
          sampleFileExt.writeToFile( "\n" );
@@ -157,45 +174,24 @@ public class SampleProgram
             ie.printStackTrace();
          }
       }
-/*
-      // Go back to the beginning of the sampling file and add the APs with 0 signal strength that didn't register for some samples.
-      try
-      {
-         File f = new File( sampleFile.getPath() );
-         Scanner scn = new Scanner( new File( sampleFile.getPath() ) );/////file intface
-
-         while( scn.hasNext() )
-         {
-            if( scn.nextLine().startsWith( "###" ) )
-            {
-               for( int i = 0; i < 3; i++ )
-               {
-                  scn.nextLine();
-
-                  // Loop through the AP table and make sure they all exist on each sample line.
-                  for( int j = 0; j < apTable.getAPTable().size(); j++ )
-                  {
-                     if( scn.nextInt() != j + 1 )
-                     {
-                        System.out.println( aps.get( j ).getID() + ":" +  rssi + ";" );
-                        
-                     }
-                     else
-                     {
-                        // Move past the ':', RSSI, and ';' separators.
-                        scn.nextByte();
-                        scn.nextInt();
-                        scn.nextByte();
-                     }
-                  }
-               }
-            }
-         }
-      }
-      catch( Exception e )///
-      {
-         ;
-      }*/
+      /*
+       * // Go back to the beginning of the sampling file and add the APs with 0
+       * signal strength that didn't register for some samples. try { File f =
+       * new File( sampleFile.getPath() ); Scanner scn = new Scanner( new File(
+       * sampleFile.getPath() ) );/////file intface
+       * 
+       * while( scn.hasNext() ) { if( scn.nextLine().startsWith( "###" ) ) {
+       * for( int i = 0; i < 3; i++ ) { scn.nextLine();
+       * 
+       * // Loop through the AP table and make sure they all exist on each
+       * sample line. for( int j = 0; j < apTable.getAPTable().size(); j++ ) {
+       * if( scn.nextInt() != j + 1 ) { System.out.println( aps.get( j ).getID()
+       * + ":" + rssi + ";" );
+       * 
+       * } else { // Move past the ':', RSSI, and ';' separators.
+       * scn.nextByte(); scn.nextInt(); scn.nextByte(); } } } } } } catch(
+       * Exception e )/// { ; }
+       */
    }
 
    public void setGridX( int value )
@@ -215,6 +211,7 @@ public class SampleProgram
 
    private int gridx; //The X grid location of the sampled area
    private int gridy; //The Y grid location of the sampled area
+   private boolean gridLocChanged = true;
 
    private WriteFile sampleFile; // The raw data file that holds all of the generated samples for the current data set.
    private String sampleFileName; // The name of the raw data file that will hold our samples.
