@@ -1,4 +1,3 @@
-import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
@@ -8,16 +7,22 @@ import javax.swing.*;
  * GPS information using this GUI
  * 
  * @author Kwaku Farkye
+ * @author James Humphrey
  */
 public class SamplingFrame extends JFrame implements ActionListener
 {
-
+   private static final long serialVersionUID = 1L;
    private JPanel mainPanel, fieldsPanel, bottomPanel;
    private JButton run = new JButton( "Sample" );
    private JButton updateFields = new JButton( "Update" );
+   private JButton save = new JButton( "Save Results" ); // Save the results of the sampling to file.
    private JTextField gridXLoc, gridYLoc, outFile;
    private JTextArea printArea = new JTextArea();
    private SampleProgram prog;
+
+   private int gridx = 1;
+   private int gridy = 1;
+   private int numSamples = 5; // The number of samples we need to do for the current position.
 
    /**
     * public static void main(String[] args) { SamplingFrame sample = new
@@ -31,9 +36,9 @@ public class SamplingFrame extends JFrame implements ActionListener
       //setBounds(100,100,300,100);
       setSize( 800, 800 );
       setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-      Container con = this.getContentPane();
+      //Container con = this.getContentPane();
       setLayout( null );
-      prog = new SampleProgram();
+      prog = new SampleProgram( printArea );
       initComponents();
       addToFieldPanel();
       addToBottomPanel();
@@ -44,7 +49,7 @@ public class SamplingFrame extends JFrame implements ActionListener
    /* Methods */
 
    /* This initializes the components that are a part of the GUI */
-   public void initComponents()
+   private void initComponents()
    {
 
       //Main panel is where the sampled data will go (in a table)
@@ -71,7 +76,7 @@ public class SamplingFrame extends JFrame implements ActionListener
       return;
    }
 
-   public void addToFieldPanel()
+   private void addToFieldPanel()
    {
       JLabel fileLabel = new JLabel( "Output File" );
       fieldsPanel.add( fileLabel );
@@ -111,16 +116,21 @@ public class SamplingFrame extends JFrame implements ActionListener
       return;
    }
 
-   public void addToBottomPanel()
+   private void addToBottomPanel()
    {
       bottomPanel.add( run );
       run.setLocation( 100, 100 );
       run.setSize( 100, 50 );
       run.addActionListener( this );
 
+      bottomPanel.add( save );
+      save.setLocation( 250, 100 );
+      save.setSize( 100, 50 );
+      save.addActionListener( this );
+
    }
 
-   public void addToMainPanel()
+   private void addToMainPanel()
    {
       System.out.println( "Add Table To Main Panel Here" );
       mainPanel.add( printArea );
@@ -132,37 +142,96 @@ public class SamplingFrame extends JFrame implements ActionListener
    {
       if( evt.getSource() == updateFields )
       {
-         /* Update Fields button was clicked */
-         if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" )
-         {
-            System.out.println( "Nothing to update\n" );
-         }
-         /* Check if value input into grid text fields is a number */
-         if( isInteger( gridXLoc.getText() ) )
-         {
-            //Set grid values in sample program
-            System.out.println( "Grid X should be updated\n" );
-            prog.setGridX( Integer.parseInt( gridXLoc.getText() ) );
-         }
-         if( isInteger( gridYLoc.getText() ) )
-         {
-            System.out.println( "Grid Y should be updated\n" );
-            prog.setGridY( Integer.parseInt( gridYLoc.getText() ) );
-         }
-         gridXLoc.setText( "" );
-         gridYLoc.setText( "" );
-         outFile.setText( "" );
+         updateFieldsEvent();
       }
       else if( evt.getSource() == run )
       {
-         /* Sample button was hit */
-         //Run the program
-         prog.run( printArea );
+         runEvent();
+      }
+      else if( evt.getSource() == save )
+      {
+         saveResults();
+      }
+      else
+      {
+         System.out.println( "Unsupported event" );
       }
       return;
    }
 
-   public boolean isInteger( String value )
+   private void updateFieldsEvent()
+   {
+      /* Update Fields button was clicked */
+      if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" )
+      {
+         System.out.println( "Nothing to update\n" );
+      }
+
+      // Check if value input into grid X text field is a number.
+      if( !isInteger( gridXLoc.getText() ) )
+      {
+         System.out.println( "X cell location invalid" );
+         return;
+      }
+
+      // Check if value input into grid Y text field is a number.
+      if( !isInteger( gridYLoc.getText() ) )
+      {
+         System.out.println( "Y cell location invalid" );
+         return;
+      }
+
+      // Convert the grid coordinates into integers to check if they are valid.
+      int readGridX = Integer.parseInt( gridXLoc.getText() );
+      int readGridY = Integer.parseInt( gridYLoc.getText() );
+
+      // Make sure the position integers are valid (within range).
+      if( readGridX <= 0 )
+      {
+         System.out.println( "The X cell location " + readGridX + " must be > 0" );
+         return;
+      }
+      else if( readGridY <= 0 )
+      {
+         System.out.println( "The Y cell location " + readGridY + " must be > 0" );
+         return;
+      }
+
+      // Check if we have already sampled this cell location before.
+      for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
+      {
+         if( readGridX == prog.getSamples().get( cellCheck ).getLoc().x && readGridY == prog.getSamples().get( cellCheck ).getLoc().y )
+         {
+            System.out.println( "Repeating cell function not allowed" );
+            return;
+         }
+      }
+
+      //Set grid values in sample program
+      System.out.println( "Grid X should be updated\n" );
+      gridx = readGridX;
+
+      System.out.println( "Grid Y should be updated\n" );
+      gridy = readGridY;
+
+      gridXLoc.setText( "" );
+      gridYLoc.setText( "" );
+      outFile.setText( "" );
+   }
+
+   private void runEvent()
+   {
+      /* Sample button was hit */
+      updateFieldsEvent();
+      prog.runCellSample( gridx, gridy, numSamples );
+   }
+
+   private void saveResults()
+   {
+      prog.finishSampling( "sample1.txt", "Dexter Lawn", "test comment" );
+   }
+
+   private boolean isInteger( String value )
    {
       try
       {

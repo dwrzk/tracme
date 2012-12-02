@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Scanner;
-import java.io.File;
 import javax.swing.JTextArea;
 
 /**
@@ -11,6 +9,7 @@ import javax.swing.JTextArea;
  * and other attributes for the tracme project.
  * 
  * @author James Humphrey
+ * @author Kwaku Farkye
  */
 public class SampleProgram
 {
@@ -26,41 +25,41 @@ public class SampleProgram
       /*
        * SampleProgram prog = new SampleProgram(); prog.run();
        */
-      SamplingFrame frame = new SamplingFrame();
+      new SamplingFrame();
    }
 
    /**
     * Initializes objects with default values.
     */
-   public SampleProgram()
+   public SampleProgram( JTextArea printArea )
    {
       sampleFile = null;
-      sampleFileName = "";
       sampleFileExt = null;
-      locDesc = "";
-      fileComment = "";
 
       apTableFileName = "";
       apTable = null;
 
       wifiScanner = null;
-      numSamples = 0;
-      gridx = 1;
-      gridy = 1;
+
+      samples = new ArrayList< CellSample >();
+
+      this.printArea = printArea;
    }
 
    /**
-    * Runs the main program which will handle the sampling data.
+    * Runs the sampling WiFi scanner for the current cell.
+    * 
+    * @param gridx
+    *           The X cell location to sample
+    * @param gridy
+    *           The Y cell location to sample
+    * @param numSamples
+    *           The number of samples to take for this cell
     */
-   public void run( JTextArea printArea )
+   public void runCellSample( int gridx, int gridy, int numSamples )
    {
       // TODO: Manually set these for now (change in GUI).
-      sampleFileName = "sample1.txt";
-      locDesc = "Dexter's Lawn";
-      fileComment = "This comment is a test.";
       apTableFileName = "calpoly_ap_table.txt";
-      numSamples = 5;
-      minCutoff = 5000;
 
       // Get a string name of the current operating system so we can call the correct procedures.
       String osName = System.getProperty( "os.name", null );
@@ -69,8 +68,58 @@ public class SampleProgram
       apTable = new APTable( true );
       apTable.loadTable( apTableFileName );
 
-      // The list of access points generated for the current sample.
-      ArrayList< AccessPoint > aps;
+      // Search for the correct scanner depending on the operating system.
+      if( osName.equals( "Mac OS X" ) )
+      {
+         // Create the airport scanner on the MAC.
+         wifiScanner = new AirportScanner();
+      }
+      /*
+       * else if( osName.equals( "?" ) ) // Add another OS. { ; }
+       */
+      else
+      {
+         System.out.println( "Unsupported operating system" );
+         System.exit( 0 );
+      }
+
+      // Create a new cell sample to add to the sample scanner.
+      CellSample newCellSample = new CellSample();
+      newCellSample.setLoc( gridx, gridy );
+      samples.add( newCellSample );
+
+      // Take a specified number of samples for each location.
+      for( int i = 0; i < numSamples; i++ )
+      {
+         // Scan the area for a list of APs and their corresponding signal strengths.
+         Sample newSample = new Sample();
+
+         // Set the output of the WiFi scanner to the new sample for this cell.
+         newSample.setScan( wifiScanner.scan() );
+
+         // Map all AP BSSID to its unique ID from the AP table.
+         apTable.mapAPsToID( newSample.getScan(), true );
+
+         // Add the newest sample to the latest cell.
+         samples.get( samples.size() - 1 ).getSamples().add( newSample );
+      }
+
+   }
+
+   /**
+    * Outputs the results of the scan to file.
+    * 
+    * @param sampleFileName
+    *           The name of the raw data file that will hold our samples.
+    * @param locDesc
+    *           A short description of the location (i.e. "Dexter's Lawn").
+    * @param fileComment
+    *           A comment that can be added to the top of the extended file.
+    */
+   public void finishSampling( String sampleFileName, String locDesc, String fileComment )
+   {
+      // Add any APs to the sample list that have 0 signal strength.
+      addZeroAPs();
 
       // Create and open the sample file if it doesn't already exist.
       sampleFile = new WriteFile( sampleFileName, true );
@@ -92,138 +141,106 @@ public class SampleProgram
       sampleFileExt.writeToFile( "// Comment:                 " + fileComment + "\n" );
       sampleFileExt.writeToFile( "//-------------------------------------------------------------------------------\n\n" );
 
-      if( gridLocChanged )
+      for( int i = 0; i < samples.size(); i++ )
       {
-         // Grid Location was changed, so output the location information to file.
-         //System.out.println( "###" + gridx + "," + gridy );
-         printArea.append( "###" + gridx + "," + gridy + "\n" );
-         sampleFile.writeToFile( "###" + gridy + "," + gridy + "\n" );
-         sampleFileExt.writeToFile( "###" + gridy + "," + gridy + "\n" );
-         gridLocChanged = false;
-      }
+         // Get the xy location of the current cell.
+         int locx = samples.get( i ).getLoc().x;
+         int locy = samples.get( i ).getLoc().y;
 
-      // Output the location information to file.
-      //System.out.println( "###" + gridx + "," + gridy );
-      //sampleFile.writeToFile( "###" + gridy + "," + gridy + "\n" );
-      //sampleFileExt.writeToFile( "###" + gridy + "," + gridy + "\n" );
-
-      // Search for the correct scanner depending on the operating system.
-      if( osName.equals( "Mac OS X" ) )
-      {
-         // Create the airport scanner on the MAC.
-         wifiScanner = new AirportScanner();
-      }
-      /*
-       * else if( osName.equals( "?" ) ) // Add another OS. { ; }
-       */
-      else
-      {
-         System.out.println( "Unsupported operating system" );
-         System.exit( 0 );///
-      }
-
-      // Take a specified number of samples for each location.
-      for( int i = 0; i < numSamples; i++ )
-      {
-         // Scan the area for a list of APs and their corresponding signal strengths.
-         aps = wifiScanner.scan();
-
-         // Map all AP BSSID to its unique ID from the AP table.
-         apTable.mapAPsToID( aps, true );
-
-         // Remove any APs in the list with very weak signals.
-         for( int j = 0; j < aps.size(); j++ )
-         {
-            if( aps.get( j ).getRSSI() > minCutoff )
-            {
-               aps.remove( j );
-               j--;
-            }
-         }
-
-         // Sort the AP list by increasing ID value.
-         Collections.sort( aps, new AccessPointIDComparator() );
+         // Output the location information to file.
+         //System.out.println( "###" + locx + "," + locy );
+         printArea.append( "###" + locx + "," + locy + "\n" );
+         sampleFile.writeToFile( "###" + locx + "," + locy + "\n" );
+         sampleFileExt.writeToFile( "###" + locx + "," + locy + "\n" );
 
          String printString = new String();
          // Write the current sample to the file.
-         for( int j = 0; j < aps.size(); j++ )
+         for( int j = 0; j < samples.get( i ).getSamples().size(); j++ )
          {
-            printString = aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";";
-            printArea.append( printString );
-            printArea.updateUI();
-            //System.out.print( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
-            sampleFile.writeToFile( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
-            sampleFileExt.writeToFile( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
+            ArrayList< AccessPoint > aps = samples.get( i ).getSamples().get( j ).getScan();
+            for( int k = 0; k < aps.size(); k++ )
+            {
+               printString = aps.get( k ).getID() + ":" + aps.get( k ).getRSSI() + ";";
+               printArea.append( printString );
+               //printArea.updateUI();
+               //System.out.print( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
+               sampleFile.writeToFile( aps.get( k ).getID() + ":" + aps.get( k ).getRSSI() + ";" );
+               sampleFileExt.writeToFile( aps.get( k ).getID() + ":" + aps.get( k ).getRSSI() + ";" );
+            }
+
+            // Move to the next line.
+            printArea.append( "\n" );
+            System.out.println( "" );
+            sampleFile.writeToFile( "\n" );
+            sampleFileExt.writeToFile( "\n" );
          }
 
          // Move to the next line.
          printArea.append( "\n" );
-
          System.out.println( "" );
          sampleFile.writeToFile( "\n" );
          sampleFileExt.writeToFile( "\n" );
+      }
+   }
 
-         try
+   /**
+    * Go back to the beginning of the sample list and add the APs with 0 signal
+    * strength that didn't register for some samples.
+    */
+   private void addZeroAPs()
+   {
+      // Loop through the AP table and make sure they all exist on each sample line. 
+      for( int i = 0; i < samples.size(); i++ )
+      {
+         for( int j = 0; j < samples.get( i ).getSamples().size(); j++ )
          {
-            // Sleeping with higher value might help to reduce data scatter.
-            Thread.sleep( /* 500 */0 );
-         }
-         catch( InterruptedException ie )
-         {
-            // If this thread was interrupted by another thread.
-            ie.printStackTrace();
+            // Sort the AP list by increasing ID value.
+            Collections.sort( samples.get( i ).getSamples().get( j ).getScan(), new AccessPointIDComparator() );
+
+            if( samples.get( i ).getSamples().get( j ).getScan().size() != apTable.getAPTable().size() )
+            {
+               for( int k = 0; k < samples.get( i ).getSamples().get( j ).getScan().size(); k++ )
+               {
+                  if( samples.get( i ).getSamples().get( j ).getScan().get( k ).getID() != k + 1 )
+                  {
+                     AccessPoint zeroAP = apTable.getAPTable().get( k );
+                     zeroAP.setRSSI( 0 );
+                     samples.get( i ).getSamples().get( j ).getScan().add( k, zeroAP );
+                     System.out.println( apTable.getAPTable().get( j ).getID() + ":" + 0 + ";" );
+                  }
+               }
+            }
          }
       }
-      /*
-       * // Go back to the beginning of the sampling file and add the APs with 0
-       * signal strength that didn't register for some samples. try { File f =
-       * new File( sampleFile.getPath() ); Scanner scn = new Scanner( new File(
-       * sampleFile.getPath() ) );/////file intface
-       * 
-       * while( scn.hasNext() ) { if( scn.nextLine().startsWith( "###" ) ) {
-       * for( int i = 0; i < 3; i++ ) { scn.nextLine();
-       * 
-       * // Loop through the AP table and make sure they all exist on each
-       * sample line. for( int j = 0; j < apTable.getAPTable().size(); j++ ) {
-       * if( scn.nextInt() != j + 1 ) { System.out.println( aps.get( j ).getID()
-       * + ":" + rssi + ";" );
-       * 
-       * } else { // Move past the ':', RSSI, and ';' separators.
-       * scn.nextByte(); scn.nextInt(); scn.nextByte(); } } } } } } catch(
-       * Exception e )/// { ; }
-       */
    }
 
-   public void setGridX( int value )
+   /**
+    * Clears the current scan so we can start over with a different sample set.
+    */
+   public void clearScan()
    {
-      gridx = value;
+      samples.clear();
    }
 
-   public void setGridY( int value )
+   /**
+    * Accessor method for all of the cell samples in the current sample set.
+    * 
+    * @return The ArrayList of the sample set for all cells.
+    */
+   public ArrayList< CellSample > getSamples()
    {
-      gridy = value;
+      return samples;
    }
-
-   public void setSampleFile( String file )
-   {
-      sampleFileName = file;
-   }
-
-   private int gridx; //The X grid location of the sampled area
-   private int gridy; //The Y grid location of the sampled area
-   private boolean gridLocChanged = true;
 
    private WriteFile sampleFile; // The raw data file that holds all of the generated samples for the current data set.
-   private String sampleFileName; // The name of the raw data file that will hold our samples.
    private WriteFile sampleFileExt; // The extended data file with more information/comments about each sample and about the entire sample set.
-
-   private String locDesc; // A short description of the location (i.e. "Dexter's Lawn").
-   private String fileComment; // A comment that can be added to the top of the extended file.
 
    private String apTableFileName; // The name of the file that stores the AP mapping between ID and BSSID.
    private APTable apTable; // The table of access points loaded from a file.
 
    private WifiScanner wifiScanner; // The generic WiFi scanner used for generating a sample list of access points with RSSID values.
-   private int numSamples; // The number of samples we need to do for the current position.
-   private int minCutoff; // The RSSI value must be within a certain allowable signal strength otherwise it is not considered statistically significant.
+
+   private ArrayList< CellSample > samples; // The list of cells that are being sampled.
+
+   private JTextArea printArea;
 }

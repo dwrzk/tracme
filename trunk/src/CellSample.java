@@ -1,0 +1,30 @@
+import java.awt.Point;
+import java.util.ArrayList;
+
+public class CellSample
+{
+   public CellSample()
+   {
+      loc = new Point( -1, -1 );
+      samples = new ArrayList< Sample >();
+   }
+
+   public void setLoc( int x, int y )
+   {
+      loc.x = x;
+      loc.y = y;
+   }
+
+   public Point getLoc()
+   {
+      return loc;
+   }
+
+   public ArrayList< Sample > getSamples()
+   {
+      return samples;
+   }
+
+   private Point loc; // The xy location of the cell in the grid.
+   private ArrayList< Sample > samples; // The list of samples for the current cell.
+}
