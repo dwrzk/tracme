@@ -25,6 +25,7 @@ public class SamplingFrame extends JFrame implements ActionListener
 
    private int gridx = 1;
    private int gridy = 1;
+   private String sampleFileName = "sample1.txt";
    private int numSamples = 5; // The number of samples we need to do for the current position.
 
    /**
@@ -210,12 +211,19 @@ public class SamplingFrame extends JFrame implements ActionListener
    private void updateFieldsEvent()
    {
       /* Update Fields button was clicked */
-      if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" )
+      if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" && numSamplesText.getText() == "")
       {
          System.out.println( "Nothing to update\n" );
          commentArea.append( "Nothing to update\n" );
+         return;
       }
 
+      // Check if output file was specified
+      if (outFile.getText().toLowerCase().contains( ".txt" )) {
+         sampleFileName = outFile.getText();
+         commentArea.append( "Output file set to: " + sampleFileName + "\n" );
+         outFile.setText( "" );
+      }
       // Check if value input into grid X text field is a number.
       if( !isInteger( gridXLoc.getText() ) )
       {
@@ -302,7 +310,7 @@ public class SamplingFrame extends JFrame implements ActionListener
 
    private void saveResults()
    {
-      prog.finishSampling( "sample1.txt", "Dexter Lawn", "test comment" );
+      prog.finishSampling( sampleFileName, "Dexter Lawn", "test comment" );
    }
 
    private boolean isInteger( String value )
