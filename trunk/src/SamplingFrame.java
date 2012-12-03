@@ -16,7 +16,7 @@ public class SamplingFrame extends JFrame implements ActionListener
    private JButton run = new JButton( "Sample" );
    private JButton updateFields = new JButton( "Update" );
    private JButton save = new JButton( "Save Results" ); // Save the results of the sampling to file.
-   private JTextField gridXLoc, gridYLoc, outFile;
+   private JTextField gridXLoc, gridYLoc, outFile, numSamplesText, apFile;
    private JTextArea printArea = new JTextArea();
    private SampleProgram prog;
 
@@ -80,13 +80,25 @@ public class SamplingFrame extends JFrame implements ActionListener
    {
       JLabel fileLabel = new JLabel( "Output File" );
       fieldsPanel.add( fileLabel );
-      fileLabel.setLocation( 50, 50 );
-      fileLabel.setSize( 100, 50 );
+      fileLabel.setLocation( 50, 0 );
+      fileLabel.setSize( 100, 40 );
 
       outFile = new JTextField();
       fieldsPanel.add( outFile );
-      outFile.setLocation( 50, 105 );
-      outFile.setSize( 100, 50 );
+      outFile.setLocation( 50, 45 );
+      outFile.setSize( 100, 40 );
+
+      JLabel APLabel = new JLabel( "AP File" );
+      fieldsPanel.add( APLabel );
+      APLabel.setLocation( 50, 90 );
+      APLabel.setSize( 100, 40 );
+
+      apFile = new JTextField();
+      fieldsPanel.add( apFile );
+      apFile.setLocation( 50, 135 );
+      apFile.setSize( 100, 40 );
+
+     
 
       JLabel gridXLabel = new JLabel( "X Grid Location" );
       fieldsPanel.add( gridXLabel );
@@ -107,6 +119,17 @@ public class SamplingFrame extends JFrame implements ActionListener
       fieldsPanel.add( gridYLoc );
       gridYLoc.setLocation( 50, 360 );
       gridYLoc.setSize( 100, 75 );
+
+      JLabel samples = new JLabel( "Sample Size" );
+      fieldsPanel.add( samples );
+      samples.setLocation( 50, 445 );
+      samples.setSize( 100, 50 );
+      
+      numSamplesText = new JTextField();
+      fieldsPanel.add( numSamplesText );
+      numSamplesText.setLocation( 50, 500 );
+      numSamplesText.setSize( 100, 75 );
+
 
       fieldsPanel.add( updateFields );
       updateFields.setLocation( 50, 600 );
@@ -181,9 +204,17 @@ public class SamplingFrame extends JFrame implements ActionListener
          return;
       }
 
+      // Check if value input into NumSamples text field is a number.
+      if( !isInteger( numSamplesText.getText() ) )
+      {
+         System.out.println( "Number of samples invalid" );
+         return;
+      } 
+
       // Convert the grid coordinates into integers to check if they are valid.
       int readGridX = Integer.parseInt( gridXLoc.getText() );
       int readGridY = Integer.parseInt( gridYLoc.getText() );
+      int readSamples = Integer.parseInt( numSamplesText.getText() );
 
       // Make sure the position integers are valid (within range).
       if( readGridX <= 0 )
@@ -194,6 +225,11 @@ public class SamplingFrame extends JFrame implements ActionListener
       else if( readGridY <= 0 )
       {
          System.out.println( "The Y cell location " + readGridY + " must be > 0" );
+         return;
+      }
+      else if( readSamples <= 0 )
+      {
+         System.out.println( "The Sample Size " + readSamples + " must be > 0" );
          return;
       }
 
@@ -213,10 +249,13 @@ public class SamplingFrame extends JFrame implements ActionListener
 
       System.out.println( "Grid Y should be updated\n" );
       gridy = readGridY;
+      numSamples = readSamples;
+      
 
       gridXLoc.setText( "" );
       gridYLoc.setText( "" );
       outFile.setText( "" );
+      numSamplesText.setText( "" );
    }
 
    private void runEvent()
