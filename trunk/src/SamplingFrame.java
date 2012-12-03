@@ -15,9 +15,12 @@ public class SamplingFrame extends JFrame implements ActionListener
    private JPanel mainPanel, fieldsPanel, bottomPanel;
    private JButton run = new JButton( "Sample" );
    private JButton updateFields = new JButton( "Update" );
+   private JButton gis = new JButton( "GIS" );
+   private JButton gps = new JButton( "GPS" );
    private JButton save = new JButton( "Save Results" ); // Save the results of the sampling to file.
    private JTextField gridXLoc, gridYLoc, outFile, numSamplesText, apFile;
    private JTextArea printArea = new JTextArea();
+   private JTextArea commentArea = new JTextArea();
    private SampleProgram prog;
 
    private int gridx = 1;
@@ -151,6 +154,14 @@ public class SamplingFrame extends JFrame implements ActionListener
       save.setSize( 100, 50 );
       save.addActionListener( this );
 
+      bottomPanel.add( gis );
+      gis.setLocation( 100, 10 );
+      gis.setSize( 100, 50 );
+     
+      bottomPanel.add( gps );
+      gps.setLocation( 250, 10 );
+      gps.setSize( 100, 50 );
+
    }
 
    private void addToMainPanel()
@@ -159,6 +170,20 @@ public class SamplingFrame extends JFrame implements ActionListener
       mainPanel.add( printArea );
       printArea.setLocation( 10, 10 );
       printArea.setSize( 500, 500 );
+      JLabel cellInfo = new JLabel();
+      cellInfo.setText( "Grid Size: 3x3    " + "    Cell Length: 10ft");
+      mainPanel.add( cellInfo );
+      cellInfo.setLocation( 10, 510 );
+      cellInfo.setSize( 500, 15 );
+      cellInfo.setHorizontalAlignment( SwingConstants.LEFT );
+      mainPanel.add( commentArea );
+      //commentArea.setLocation( 10, 530 );
+      commentArea.setSize( 500, 50 );
+      JScrollPane scroll = new JScrollPane( commentArea );
+      //scroll.setVeritcalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+      mainPanel.add( scroll );
+      scroll.setLocation( 10, 530 );
+      scroll.setSize( 500, 50 );
    }
 
    public void actionPerformed( ActionEvent evt )
@@ -188,26 +213,30 @@ public class SamplingFrame extends JFrame implements ActionListener
       if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" )
       {
          System.out.println( "Nothing to update\n" );
+         commentArea.append( "Nothing to update\n" );
       }
 
       // Check if value input into grid X text field is a number.
       if( !isInteger( gridXLoc.getText() ) )
       {
-         System.out.println( "X cell location invalid" );
+         System.out.println( "X cell location invalid\n" );
+         commentArea.append( "X cell location invalid\n" );
          return;
       }
 
       // Check if value input into grid Y text field is a number.
       if( !isInteger( gridYLoc.getText() ) )
       {
-         System.out.println( "Y cell location invalid" );
+         System.out.println( "Y cell location invalid\n" );
+         commentArea.append( "Y cell location invalid\n" );
          return;
       }
 
       // Check if value input into NumSamples text field is a number.
       if( !isInteger( numSamplesText.getText() ) )
       {
-         System.out.println( "Number of samples invalid" );
+         System.out.println( "Number of samples invalid\n" );
+         commentArea.append( "Number of samples invalid\n" );
          return;
       } 
 
@@ -220,16 +249,19 @@ public class SamplingFrame extends JFrame implements ActionListener
       if( readGridX <= 0 )
       {
          System.out.println( "The X cell location " + readGridX + " must be > 0" );
+         commentArea.append( "The X cell location " + readGridX + " must be > 0\n" );
          return;
       }
       else if( readGridY <= 0 )
       {
          System.out.println( "The Y cell location " + readGridY + " must be > 0" );
+         commentArea.append( "The Y cell location " + readGridY + " must be > 0\n" );
          return;
       }
       else if( readSamples <= 0 )
       {
          System.out.println( "The Sample Size " + readSamples + " must be > 0" );
+         commentArea.append( "The Sample Size " + readSamples + " must be > 0\n" );
          return;
       }
 
@@ -239,15 +271,18 @@ public class SamplingFrame extends JFrame implements ActionListener
          if( readGridX == prog.getSamples().get( cellCheck ).getLoc().x && readGridY == prog.getSamples().get( cellCheck ).getLoc().y )
          {
             System.out.println( "Repeating cell function not allowed" );
+            commentArea.append( "Repeating cell function not allowed\n" );
             return;
          }
       }
 
       //Set grid values in sample program
       System.out.println( "Grid X should be updated\n" );
+      commentArea.append( "Grid X location updated to: " + readGridX + "\n" );
       gridx = readGridX;
 
       System.out.println( "Grid Y should be updated\n" );
+      commentArea.append( "Grid Y location updated to: " + readGridY + "\n" );
       gridy = readGridY;
       numSamples = readSamples;
       
