@@ -21,6 +21,10 @@ public class TrainingModel
       rho = 0;
       totalSv = 0;
       matrix = null;
+
+      // TODO: Remove this code because of UML dependencies
+      scale = new SvmScale( "2.0" );
+      scale.scaleAttr( 2, 2.0 );
    }
 
    public void loadTrainingModel( String file )
@@ -171,4 +175,6 @@ public class TrainingModel
    private double rho;
    private int totalSv;
    private double[][] matrix;
+
+   private SvmScale scale;
 }
