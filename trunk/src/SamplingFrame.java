@@ -28,6 +28,8 @@ public class SamplingFrame extends JFrame implements ActionListener
    private String sampleFileName = "sample1.txt";
    private int numSamples = 5; // The number of samples we need to do for the current position.
 
+   private boolean working = false;
+   
    /**
     * public static void main(String[] args) { SamplingFrame sample = new
     * SamplingFrame(); }
