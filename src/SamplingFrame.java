@@ -1,5 +1,7 @@
+import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 /**
  * This file sets up the gui for SampleProgram.java User will be able to set the
@@ -9,7 +11,7 @@ import javax.swing.*;
  * @author Kwaku Farkye
  * @author James Humphrey
  */
-public class SamplingFrame extends JFrame implements ActionListener
+public class SamplingFrame extends JFrame implements ActionListener, ChangeListener
 {
    private static final long serialVersionUID = 1L;
    private JPanel mainPanel, fieldsPanel, bottomPanel;
@@ -17,17 +19,60 @@ public class SamplingFrame extends JFrame implements ActionListener
    private JButton updateFields = new JButton( "Update" );
    private JButton gis = new JButton( "GIS" );
    private JButton gps = new JButton( "GPS" );
-   private JButton save = new JButton( "Save Results" ); // Save the results of the sampling to file.
-   private JTextField gridXLoc, gridYLoc, outFile, numSamplesText, apFile;
+   
+   
+   
+   //private JTextField gridXLoc, gridYLoc; 
+   private JTextField outFile, numSamplesText, apFile;
    private JTextArea printArea = new JTextArea();
    private JTextArea commentArea = new JTextArea();
    private SampleProgram prog;
+   
 
    private int gridx = 1;
    private int gridy = 1;
    private String sampleFileName = "sample1.txt";
    private int numSamples = 5; // The number of samples we need to do for the current position.
 
+   /** Access Point (AP) table name */
+   private String apFileName = "calpoly_ap_table.txt";
+   
+   /** This button saves the results of the sampling to file */
+   private JButton save = new JButton( "Save" ); 
+   
+   /** Spinner component for x coordinate */
+   private JSpinner xSpinner;
+   
+   /** Spinner component for y coordinate */
+   private JSpinner ySpinner;
+   
+   /** Size of grid in the X direction */
+   private int gridSizeX = 3;
+
+   /** Size of grid in the Y direction */
+   private int gridSizeY = 3;
+   
+   /** Combo Box controlling gridSizeX value */
+   private JComboBox xGrid;
+   
+   /** Combo Box controlling gridSizeY value */
+   private JComboBox yGrid;
+   
+   /** Radio Button Panel controlling direction */
+   private JPanel radioPanel;
+   
+   /** North Direction Radio Button */
+   private JRadioButton north;
+   
+   /** South Direction Radio Button */
+   private JRadioButton south;
+   
+   /** East Direction Radio Button */
+   private JRadioButton east;
+   
+   /** West Direction Radio Button */
+   private JRadioButton west;
+   
    /* Test to see if working */
    private boolean working = true;
    
@@ -39,7 +84,7 @@ public class SamplingFrame extends JFrame implements ActionListener
    /* Constructors */
    public SamplingFrame()
    {
-      super( "Sampling Program Frame" );
+      super( "Sampling Program" );
       //setBounds(100,100,300,100);
       setSize( 800, 800 );
       setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -80,91 +125,170 @@ public class SamplingFrame extends JFrame implements ActionListener
       bottomPanel.setSize( 600, 200 );
       add( bottomPanel );
 
+
+      //Group of radio buttons for directions
+      ButtonGroup bGroup = new ButtonGroup();
+      
+      north = new JRadioButton( "North" );
+      north.setActionCommand( "North" );
+      north.setSelected( true );
+      
+      south = new JRadioButton( "South" );
+      south.setActionCommand( "South" );
+      
+      east = new JRadioButton( "East" );
+      east.setActionCommand( "East" );
+      
+      west = new JRadioButton( "Wast" );
+      west.setActionCommand( "West" );
+      
+      bGroup.add( north );
+      bGroup.add( south );
+      bGroup.add( east );
+      bGroup.add( west );
+      
+      north.addActionListener(this);
+      south.addActionListener(this);
+      east.addActionListener(this);
+      west.addActionListener(this);
+      
+      radioPanel = new JPanel( new GridLayout(0,1) );
+      radioPanel.add(north);
+      radioPanel.add(south);
+      radioPanel.add(east);
+      radioPanel.add(west);
+      
+      
       return;
    }
 
    private void addToFieldPanel()
    {
+	  
+	  /** Grid Size Coordinates **/
+	  JLabel gridInfo = new JLabel();
+	  gridInfo.setText( "Grid Info" );
+	  fieldsPanel.add( gridInfo );
+	  gridInfo.setLocation( 10, 0 );
+	  gridInfo.setSize( 200, 30 );
+	  Integer[] xSize = new Integer[100];
+	  Integer[] ySize = new Integer[100];
+	  
+	  for (int i = 0; i < xSize.length; i++) {
+		  xSize[i] = i + 1;
+		  ySize[i] = i + 1;
+	  }
+	  
+	  xGrid = new JComboBox( xSize );
+	  yGrid = new JComboBox( ySize );
+	  //Initialize to 3x3 grid
+	  xGrid.setSelectedIndex(2);
+	  xGrid.addActionListener(this);
+	  yGrid.setSelectedIndex(2);
+	  yGrid.addActionListener(this);
+	  
+	  fieldsPanel.add( xGrid );
+	  fieldsPanel.add( yGrid );
+	  JLabel x = new JLabel( "X" );
+	  fieldsPanel.add( x );
+	  x.setLocation( 55,50 );
+	  x.setSize( 10,20 );
+	  xGrid.setLocation( 10, 50 );
+	  yGrid.setLocation( 75, 50 );
+	  xGrid.setSize( 45, 20 );
+	  yGrid.setSize( 45, 20 );
+
       JLabel fileLabel = new JLabel( "Output File" );
       fieldsPanel.add( fileLabel );
-      fileLabel.setLocation( 50, 0 );
-      fileLabel.setSize( 100, 40 );
-
+      fileLabel.setLocation( 10, 80 );
+      fileLabel.setSize( 100, 20 );
+	  
       outFile = new JTextField();
       fieldsPanel.add( outFile );
-      outFile.setLocation( 50, 45 );
-      outFile.setSize( 100, 40 );
+      outFile.setLocation( 10, 105 );
+      outFile.setSize( 100, 25 );
 
       JLabel APLabel = new JLabel( "AP File" );
       fieldsPanel.add( APLabel );
-      APLabel.setLocation( 50, 90 );
-      APLabel.setSize( 100, 40 );
+      APLabel.setLocation( 10, 140 );
+      APLabel.setSize( 100, 20 );
 
       apFile = new JTextField();
       fieldsPanel.add( apFile );
-      apFile.setLocation( 50, 135 );
-      apFile.setSize( 100, 40 );
+      apFile.setLocation( 10, 165 );
+      apFile.setSize( 100, 25 );
 
-     
 
-      JLabel gridXLabel = new JLabel( "X Grid Location" );
+      JLabel gridXLabel = new JLabel( "X Coord" );
       fieldsPanel.add( gridXLabel );
-      gridXLabel.setLocation( 50, 175 );
-      gridXLabel.setSize( 100, 50 );
+      gridXLabel.setLocation( 0, 200 );
+      gridXLabel.setSize( 60, 20 );
 
-      gridXLoc = new JTextField();
-      fieldsPanel.add( gridXLoc );
-      gridXLoc.setLocation( 50, 230 );
-      gridXLoc.setSize( 100, 75 );
-
-      JLabel gridYLabel = new JLabel( "Y Grid Location" );
+      SpinnerNumberModel gridXLoc1 = new SpinnerNumberModel( 1, 1, gridSizeX, 1 );
+      xSpinner = new JSpinner( gridXLoc1 );
+      fieldsPanel.add( xSpinner );
+      xSpinner.setLocation( 10, 225 );
+      xSpinner.setSize( 40, 50 );
+      xSpinner.addChangeListener( this );
+      
+      
+      JLabel gridYLabel = new JLabel( "Y Coord" );
       fieldsPanel.add( gridYLabel );
-      gridYLabel.setLocation( 50, 315 );
-      gridYLabel.setSize( 100, 50 );
+      gridYLabel.setLocation( 80, 200 );
+      gridYLabel.setSize( 60, 20 );
 
-      gridYLoc = new JTextField();
-      fieldsPanel.add( gridYLoc );
-      gridYLoc.setLocation( 50, 360 );
-      gridYLoc.setSize( 100, 75 );
+      SpinnerNumberModel gridYLoc1 = new SpinnerNumberModel( 1, 1, gridSizeY, 1 );
+      ySpinner = new JSpinner( gridYLoc1 );
+      fieldsPanel.add( ySpinner );
+      ySpinner.setLocation( 90, 225 );
+      ySpinner.setSize( 40, 50 );
+      ySpinner.addChangeListener( this );
 
       JLabel samples = new JLabel( "Sample Size" );
       fieldsPanel.add( samples );
-      samples.setLocation( 50, 445 );
-      samples.setSize( 100, 50 );
+      samples.setLocation( 10, 300 );
+      samples.setSize( 100, 20 );
       
-      numSamplesText = new JTextField();
+      numSamplesText = new JTextField( );
+      numSamplesText.setText( ((Integer)numSamples).toString() );
       fieldsPanel.add( numSamplesText );
-      numSamplesText.setLocation( 50, 500 );
-      numSamplesText.setSize( 100, 75 );
+      numSamplesText.setLocation( 10, 325 );
+      numSamplesText.setSize( 50, 75 );
 
 
       fieldsPanel.add( updateFields );
-      updateFields.setLocation( 50, 600 );
-      updateFields.setSize( 100, 50 );
+      updateFields.setLocation( 70, 325 );
+      updateFields.setSize( 75, 50 );
       updateFields.addActionListener( this );
+            
 
+      fieldsPanel.add( radioPanel );
+      radioPanel.setLocation( 10, 415 );
+      radioPanel.setSize( 100, 100 );
+      
       return;
    }
 
    private void addToBottomPanel()
    {
-      bottomPanel.add( run );
-      run.setLocation( 100, 100 );
-      run.setSize( 100, 50 );
-      run.addActionListener( this );
-
+	   
+	  bottomPanel.add( gis );
+	  gis.setLocation( 0, 10 );
+	  gis.setSize( 100, 50 );
+	  
+	  bottomPanel.add( gps );
+      gps.setLocation( 110, 10 );
+      gps.setSize( 100, 50 );
+	  
       bottomPanel.add( save );
-      save.setLocation( 250, 100 );
+      save.setLocation( 220, 10 );
       save.setSize( 100, 50 );
       save.addActionListener( this );
-
-      bottomPanel.add( gis );
-      gis.setLocation( 100, 10 );
-      gis.setSize( 100, 50 );
-     
-      bottomPanel.add( gps );
-      gps.setLocation( 250, 10 );
-      gps.setSize( 100, 50 );
+      
+      bottomPanel.add( run );
+      run.setLocation( 330, 10 );
+      run.setSize( 100, 50 );
+      run.addActionListener( this );  
 
    }
 
@@ -190,11 +314,44 @@ public class SamplingFrame extends JFrame implements ActionListener
       scroll.setSize( 500, 50 );
    }
 
+   public void stateChanged( ChangeEvent e )
+   {
+	   if ( e.getSource() == xSpinner ) {
+		   updateXLoc();
+	   }
+	   else if ( e.getSource() == ySpinner ) {
+		   updateYLoc();
+	   }
+   }
+ 
+   public void updateXLoc() {
+	   int readXLoc;
+	   
+	   readXLoc = (Integer)xSpinner.getModel().getValue();
+	   gridx = readXLoc;
+	   
+	   commentArea.append( "sample Location changed to: (" +
+	   		gridx + "," + gridy + ")\n" );
+	   
+   }
+   
+   public void updateYLoc() {
+	   int readYLoc;
+	   
+	   readYLoc = (Integer)ySpinner.getModel().getValue();
+	   gridy = readYLoc;
+	   
+	   commentArea.append( "sample Location changed to: (" +
+	   		gridx + "," + gridy + ")\n" );
+	   
+   }
+   
    public void actionPerformed( ActionEvent evt )
    {
       if( evt.getSource() == updateFields )
       {
-         updateFieldsEvent();
+    	 updateSamples();
+         //updateFieldsEvent();
       }
       else if( evt.getSource() == run )
       {
@@ -204,6 +361,30 @@ public class SamplingFrame extends JFrame implements ActionListener
       {
          saveResults();
       }
+      else if ( evt.getSource() == xGrid )
+      {
+    	 updateGridX();
+      }
+      else if ( evt.getSource() == yGrid )
+      {
+    	 updateGridY();
+      }
+      else if ( evt.getSource() == north )
+      {
+    	 commentArea.append("Direction set to north\n");
+      }
+      else if ( evt.getSource() == south )
+      {
+    	  commentArea.append("Direction set to south\n");
+      }
+      else if ( evt.getSource() == east )
+      {
+    	  commentArea.append("Direction set to east\n");
+      }
+      else if ( evt.getSource() == west )
+      {
+    	  commentArea.append("Direction set to west\n");
+      }
       else
       {
          System.out.println( "Unsupported event" );
@@ -211,9 +392,42 @@ public class SamplingFrame extends JFrame implements ActionListener
       return;
    }
 
+   private void updateSamples() {
+	      // Check if value input into NumSamples text field is a number.
+	      if( !isInteger( numSamplesText.getText() ) )
+	      {
+	         commentArea.append( "Number of samples invalid\n" );
+	         return;
+	      } 
+	      int readSamples = Integer.parseInt( numSamplesText.getText() );
+	      if( readSamples <= 0 )
+	      {
+	         commentArea.append( "The Sample Size " + readSamples + " must be > 0\n" );
+	         return;
+	      }
+	      numSamples = readSamples;
+	      commentArea.append( "Sample Size Changed to: " +
+	    		  numSamples + "\n");
+   }
+   
+   private void updateGridX() {
+	  gridSizeX = (Integer)xGrid.getSelectedItem();
+	  commentArea.append( "Updated Grid Size to : " + gridSizeX + "x" + gridSizeY + "\n" );
+	  //TODO: Update the bounds of the xCell Box
+	  ((SpinnerNumberModel) xSpinner.getModel()).setMaximum( (Integer)gridSizeX );
+   }
+   
+   private void updateGridY() {
+	   gridSizeY = (Integer)yGrid.getSelectedItem();
+	   commentArea.append( "Updated Grid Size to : " + gridSizeX + "x" + gridSizeY + "\n" );
+	   //TODO: Update the bounds of the yCell Box
+	   ((SpinnerNumberModel) ySpinner.getModel()).setMaximum( (Integer)gridSizeY );
+   }
+   
+   /**
    private void updateFieldsEvent()
    {
-      /* Update Fields button was clicked */
+      // Update Fields button was clicked
       if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" && numSamplesText.getText() == "")
       {
          System.out.println( "Nothing to update\n" );
@@ -303,12 +517,22 @@ public class SamplingFrame extends JFrame implements ActionListener
       outFile.setText( "" );
       numSamplesText.setText( "" );
    }
+   **/
 
    private void runEvent()
    {
       /* Sample button was hit */
-      updateFieldsEvent();
-      prog.runCellSample( gridx, gridy, numSamples );
+	   
+	  // Check if we have already sampled this cell location before.
+	  for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
+	  {
+	      if( gridx == prog.getSamples().get( cellCheck ).getLoc().x && gridy == prog.getSamples().get( cellCheck ).getLoc().y )
+	      {
+	            commentArea.append( "Repeating cell function not allowed\n" );
+	            return;
+	      }
+	   }
+       prog.runCellSample( gridx, gridy, numSamples );
    }
 
    private void saveResults()
