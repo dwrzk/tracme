@@ -148,7 +148,7 @@ public class SampleProgram
          int locy = samples.get( i ).getLoc().y;
 
          // Output the location information to file.
-         //System.out.println( "###" + locx + "," + locy );
+         //System.out.println( "###" + locx + "," + locy + "\n" );
          printArea.append( "###" + locx + "," + locy + "\n" );
          sampleFile.writeToFile( "###" + locx + "," + locy + "\n" );
          sampleFileExt.writeToFile( "###" + locx + "," + locy + "\n" );
@@ -161,11 +161,12 @@ public class SampleProgram
             for( int k = 0; k < aps.size(); k++ )
             {
                printString = aps.get( k ).getID() + ":" + aps.get( k ).getRSSI() + ";";
+
                printArea.append( printString );
                //printArea.updateUI();
-               //System.out.print( aps.get( j ).getID() + ":" + aps.get( j ).getRSSI() + ";" );
-               sampleFile.writeToFile( aps.get( k ).getID() + ":" + aps.get( k ).getRSSI() + ";" );
-               sampleFileExt.writeToFile( aps.get( k ).getID() + ":" + aps.get( k ).getRSSI() + ";" );
+               //System.out.print( printString );
+               sampleFile.writeToFile( printString );
+               sampleFileExt.writeToFile( printString );
             }
 
             // Move to the next line.
@@ -176,10 +177,10 @@ public class SampleProgram
          }
 
          // Move to the next line.
-         printArea.append( "\n" );
+         /*printArea.append( "\n" );
          System.out.println( "" );
          sampleFile.writeToFile( "\n" );
-         sampleFileExt.writeToFile( "\n" );
+         sampleFileExt.writeToFile( "\n" );*/
       }
    }
 
@@ -189,7 +190,7 @@ public class SampleProgram
     */
    private void addZeroAPs()
    {
-      // Loop through the AP table and make sure they all exist on each sample line. 
+      // Loop through the AP table and make sure they all exist on each sample line.
       for( int i = 0; i < samples.size(); i++ )
       {
          for( int j = 0; j < samples.get( i ).getSamples().size(); j++ )
@@ -199,14 +200,16 @@ public class SampleProgram
 
             if( samples.get( i ).getSamples().get( j ).getScan().size() != apTable.getAPTable().size() )
             {
-               for( int k = 0; k < samples.get( i ).getSamples().get( j ).getScan().size(); k++ )
+               for( int k = 0; k < /*samples.get( i ).getSamples().get( j ).getScan().size()*/apTable.getAPTable().size(); k++ )
                {
-                  if( samples.get( i ).getSamples().get( j ).getScan().get( k ).getID() != k + 1 )
+                  if( k > samples.get( i ).getSamples().get( j ).getScan().size() - 1
+                        || samples.get( i ).getSamples().get( j ).getScan().get( k ).getID() != k + 1 )
                   {
                      AccessPoint zeroAP = apTable.getAPTable().get( k );
                      zeroAP.setRSSI( 0 );
                      samples.get( i ).getSamples().get( j ).getScan().add( k, zeroAP );
-                     System.out.println( apTable.getAPTable().get( j ).getID() + ":" + 0 + ";" );
+                     System.out.println( zeroAP.getID() + ":" + 0 + ";" );
+                     System.out.println( "Adding zero sample" );
                   }
                }
             }
@@ -242,5 +245,5 @@ public class SampleProgram
 
    private ArrayList< CellSample > samples; // The list of cells that are being sampled.
 
-   private JTextArea printArea;
+   private JTextArea printArea; // The console window where debug information can be print to.
 }
