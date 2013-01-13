@@ -25,7 +25,7 @@ public class SampleProgram
       /*
        * SampleProgram prog = new SampleProgram(); prog.run();
        */
-      new SamplingFrame();
+      new LaptopFrame();
    }
 
    /**
@@ -49,14 +49,8 @@ public class SampleProgram
    /**
     * Runs the sampling WiFi scanner for the current cell.
     * 
-    * @param gridx
-    *           The X cell location to sample
-    * @param gridy
-    *           The Y cell location to sample
-    * @param numSamples
-    *           The number of samples to take for this cell
     */
-   public void runCellSample( int gridx, int gridy, int numSamples )
+   public void runCellSample()
    {
       // TODO: Manually set these for now (change in GUI).
       apTableFileName = "calpoly_ap_table.txt";
@@ -116,7 +110,7 @@ public class SampleProgram
     * @param fileComment
     *           A comment that can be added to the top of the extended file.
     */
-   public void finishSampling( String sampleFileName, String locDesc, String fileComment )
+   public void finishSampling( String locDesc, String fileComment )
    {
       // Add any APs to the sample list that have 0 signal strength.
       addZeroAPs();
@@ -235,6 +229,136 @@ public class SampleProgram
       return samples;
    }
 
+   /**
+    * Accessor method for grid size in x direction
+    * 
+    * @return grid size in x direction
+    */
+   public int getGridSizeX() {
+	   return gridSizeX;
+   }
+   
+   /**
+    * Setter method for grid size in x direction
+    * 
+    * @param val Value to set gridSizeX to
+    */
+   public void setGridSizeX( int val ) {
+	   gridSizeX = val;
+   }
+   
+   /**
+    * Setter method for grid size in y direction
+    * 
+    * @param val Value to set gridSizeY to
+    */
+   public void setGridSizeY( int val ) {
+	   gridSizeY = val;
+   }
+   
+   /**
+    * Accessor method for grid size in y direction
+    * 
+    * @return grid size in y direction
+    */
+   public int getGridSizeY() {
+	   return gridSizeY;
+   }
+   
+   /**
+    * Setter method for number of samples
+    * 
+    * @param val Value to set numSamples to
+    */
+   public void setNumSamples( int val ) {
+	   numSamples = val;
+   }
+   
+   /**
+    * Accessor method for number of samples
+    * 
+    * @return desired number of samples
+    */
+   public int getNumSamples() {
+	   return numSamples;
+   }
+   
+   /**
+    * Accessor method for grid location in x direction
+    * 
+    * @return grid location in x direction
+    */
+   public int getGridX() {
+	   return gridx;
+   }
+   
+   /**
+    * Setter method for grid location in x direction
+    * 
+    * @param val 
+    * 		Value to set gridx to
+    */
+   public void setGridX( int val ) {
+	   gridx = val;
+   }
+   
+   /**
+    * Setter method for grid location in y direction
+    * 
+    * @param val 
+    * 		Value to set gridy to
+    */
+   public void setGridY( int val ) {
+	   gridy = val;
+   }
+   
+   /**
+    * Accessor method for grid size in y direction
+    * 
+    * @return cell location in y direction
+    */
+   public int getGridY() {
+	   return gridy;
+   }
+   
+   /**
+    * Setter method for name of sample file
+    * 
+    * @param val 
+    * 		Value to set sampleFileName to
+    */
+   public void setSampleFileName( String val ) {
+	   sampleFileName = val;
+   }
+   
+   /**
+    * Accessor method for sample file name
+    * 
+    * @return name of sample file
+    */
+   public String getSampleFileName() {
+	   return sampleFileName;
+   }
+   
+   /**
+    * Setter method for name of access point table file
+    * 
+    * @param val 
+    * 		Value to set access point file name to
+    */
+   public void setAPFileName( String val ) {
+	   apTableFileName = val;
+   }
+   
+   /**
+    * Accessor method for access point file name
+    * 
+    * @return name of access point table file
+    */
+   public String getAPFileName() {
+	   return apTableFileName;
+   }
+   
    private WriteFile sampleFile; // The raw data file that holds all of the generated samples for the current data set.
    private WriteFile sampleFileExt; // The extended data file with more information/comments about each sample and about the entire sample set.
 
@@ -246,4 +370,23 @@ public class SampleProgram
    private ArrayList< CellSample > samples; // The list of cells that are being sampled.
 
    private JTextArea printArea; // The console window where debug information can be print to.
+   
+   /** Size of grid in the X direction */
+   private int gridSizeX = 3;
+
+   /** Size of grid in the Y direction */
+   private int gridSizeY = 3;
+   
+   /** The number of samples we need to do for the current position */
+   private int numSamples = 5;
+   
+   /** The current Cell Location in X direction */
+   private int gridx = 1;
+   
+   /** The current Cell Location in Y direction */
+   private int gridy = 1;
+   
+   /** name of the output file we write to */
+   private String sampleFileName = "sample1.txt";
+   
 }
