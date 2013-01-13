@@ -3,39 +3,33 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+
 /**
  * This file sets up the gui for SampleProgram.java User will be able to set the
  * grid location, number of samples Sample file, view the sample data, and view
- * GPS information using this GUI
+ * GPS information using this GUI. This is the implementation of class SamplingGUI for Windows and Mac users
  * 
  * @author Kwaku Farkye
  * @author James Humphrey
  */
-public class SamplingFrame extends JFrame implements ActionListener, ChangeListener
+public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, ChangeListener
 {
-   private static final long serialVersionUID = 1L;
+   //private static final long serialVersionUID = 1L;
    private JPanel mainPanel, fieldsPanel, bottomPanel;
    private JButton run = new JButton( "Sample" );
    private JButton updateFields = new JButton( "Update" );
    private JButton gis = new JButton( "GIS" );
    private JButton gps = new JButton( "GPS" );
    
+	/** Instance of SampleProgram */
+	SampleProgram prog;	
    
-   
-   //private JTextField gridXLoc, gridYLoc; 
    private JTextField outFile, numSamplesText, apFile;
    private JTextArea printArea = new JTextArea();
-   private JTextArea commentArea = new JTextArea();
-   private SampleProgram prog;
    
-
-   private int gridx = 1;
-   private int gridy = 1;
-   private String sampleFileName = "sample1.txt";
-   private int numSamples = 5; // The number of samples we need to do for the current position.
-
-   /** Access Point (AP) table name */
-   private String apFileName = "calpoly_ap_table.txt";
+   /** Generic console for GUI that will help user through program run */
+   private JTextArea commentArea = new JTextArea();
+   
    
    /** This button saves the results of the sampling to file */
    private JButton save = new JButton( "Save" ); 
@@ -46,17 +40,13 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
    /** Spinner component for y coordinate */
    private JSpinner ySpinner;
    
-   /** Size of grid in the X direction */
-   private int gridSizeX = 3;
-
-   /** Size of grid in the Y direction */
-   private int gridSizeY = 3;
+   
    
    /** Combo Box controlling gridSizeX value */
-   private JComboBox xGrid;
+   private JComboBox<Integer> xGrid;
    
    /** Combo Box controlling gridSizeY value */
-   private JComboBox yGrid;
+   private JComboBox<Integer> yGrid;
    
    /** Radio Button Panel controlling direction */
    private JPanel radioPanel;
@@ -73,18 +63,18 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
    /** West Direction Radio Button */
    private JRadioButton west;
    
-   /* Test to see if working */
-   private boolean working = true;
+   /** All Directions Radio Button */
+   private JRadioButton all;
    
    /**
-    * public static void main(String[] args) { SamplingFrame sample = new
-    * SamplingFrame(); }
+    * public static void main(String[] args) { LaptopFrame sample = new
+    * LaptopFrame(); }
     **/
 
    /* Constructors */
-   public SamplingFrame()
+   public LaptopFrame()
    {
-      super( "Sampling Program" );
+	  super( "Sampling Program" );
       //setBounds(100,100,300,100);
       setSize( 800, 800 );
       setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -101,7 +91,7 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
    /* Methods */
 
    /* This initializes the components that are a part of the GUI */
-   private void initComponents()
+   public void initComponents()
    {
 
       //Main panel is where the sampled data will go (in a table)
@@ -139,25 +129,30 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
       east = new JRadioButton( "East" );
       east.setActionCommand( "East" );
       
-      west = new JRadioButton( "Wast" );
+      west = new JRadioButton( "West" );
       west.setActionCommand( "West" );
+      
+      all = new JRadioButton( "All Directions" );
+      all.setActionCommand( "All Directions" );
       
       bGroup.add( north );
       bGroup.add( south );
       bGroup.add( east );
       bGroup.add( west );
+      bGroup.add( all );
       
       north.addActionListener(this);
       south.addActionListener(this);
       east.addActionListener(this);
       west.addActionListener(this);
+      all.addActionListener(this);
       
       radioPanel = new JPanel( new GridLayout(0,1) );
       radioPanel.add(north);
       radioPanel.add(south);
       radioPanel.add(east);
       radioPanel.add(west);
-      
+      radioPanel.add(all);
       
       return;
    }
@@ -179,8 +174,8 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
 		  ySize[i] = i + 1;
 	  }
 	  
-	  xGrid = new JComboBox( xSize );
-	  yGrid = new JComboBox( ySize );
+	  xGrid = new JComboBox<Integer>( xSize );
+	  yGrid = new JComboBox<Integer>( ySize );
 	  //Initialize to 3x3 grid
 	  xGrid.setSelectedIndex(2);
 	  xGrid.addActionListener(this);
@@ -224,7 +219,7 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
       gridXLabel.setLocation( 0, 200 );
       gridXLabel.setSize( 60, 20 );
 
-      SpinnerNumberModel gridXLoc1 = new SpinnerNumberModel( 1, 1, gridSizeX, 1 );
+      SpinnerNumberModel gridXLoc1 = new SpinnerNumberModel( 1, 1, prog.getGridSizeX(), 1 );
       xSpinner = new JSpinner( gridXLoc1 );
       fieldsPanel.add( xSpinner );
       xSpinner.setLocation( 10, 225 );
@@ -237,7 +232,7 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
       gridYLabel.setLocation( 80, 200 );
       gridYLabel.setSize( 60, 20 );
 
-      SpinnerNumberModel gridYLoc1 = new SpinnerNumberModel( 1, 1, gridSizeY, 1 );
+      SpinnerNumberModel gridYLoc1 = new SpinnerNumberModel( 1, 1, prog.getGridSizeY(), 1 );
       ySpinner = new JSpinner( gridYLoc1 );
       fieldsPanel.add( ySpinner );
       ySpinner.setLocation( 90, 225 );
@@ -250,7 +245,7 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
       samples.setSize( 100, 20 );
       
       numSamplesText = new JTextField( );
-      numSamplesText.setText( ((Integer)numSamples).toString() );
+      numSamplesText.setText( ((Integer)prog.getNumSamples()).toString() );
       fieldsPanel.add( numSamplesText );
       numSamplesText.setLocation( 10, 325 );
       numSamplesText.setSize( 50, 75 );
@@ -328,10 +323,10 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
 	   int readXLoc;
 	   
 	   readXLoc = (Integer)xSpinner.getModel().getValue();
-	   gridx = readXLoc;
+	   prog.setGridX(readXLoc);
 	   
 	   commentArea.append( "sample Location changed to: (" +
-	   		gridx + "," + gridy + ")\n" );
+	   		prog.getGridX() + "," + prog.getGridY() + ")\n" );
 	   
    }
    
@@ -339,10 +334,10 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
 	   int readYLoc;
 	   
 	   readYLoc = (Integer)ySpinner.getModel().getValue();
-	   gridy = readYLoc;
+	   prog.setGridY(readYLoc);
 	   
 	   commentArea.append( "sample Location changed to: (" +
-	   		gridx + "," + gridy + ")\n" );
+	   		prog.getGridX() + "," + prog.getGridY() + ")\n" );
 	   
    }
    
@@ -392,7 +387,7 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
       return;
    }
 
-   private void updateSamples() {
+   public void updateSamples() {
 	      // Check if value input into NumSamples text field is a number.
 	      if( !isInteger( numSamplesText.getText() ) )
 	      {
@@ -405,25 +400,53 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
 	         commentArea.append( "The Sample Size " + readSamples + " must be > 0\n" );
 	         return;
 	      }
-	      numSamples = readSamples;
+	      prog.setNumSamples( readSamples );
 	      commentArea.append( "Sample Size Changed to: " +
-	    		  numSamples + "\n");
+	    		  prog.getNumSamples() + "\n");
    }
    
-   private void updateGridX() {
-	  gridSizeX = (Integer)xGrid.getSelectedItem();
-	  commentArea.append( "Updated Grid Size to : " + gridSizeX + "x" + gridSizeY + "\n" );
-	  //TODO: Update the bounds of the xCell Box
-	  ((SpinnerNumberModel) xSpinner.getModel()).setMaximum( (Integer)gridSizeX );
+   public void updateGridX() {
+	  prog.setGridSizeX((Integer)xGrid.getSelectedItem());
+	  commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX() + "x" + prog.getGridSizeY() + "\n" );
+	  ((SpinnerNumberModel) xSpinner.getModel()).setMaximum( (Integer)prog.getGridSizeX() );
    }
    
-   private void updateGridY() {
-	   gridSizeY = (Integer)yGrid.getSelectedItem();
-	   commentArea.append( "Updated Grid Size to : " + gridSizeX + "x" + gridSizeY + "\n" );
+   public void updateGridY() {
+	   prog.setGridSizeY((Integer)yGrid.getSelectedItem());
+	   commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX() + "x" + prog.getGridSizeY() + "\n" );
 	   //TODO: Update the bounds of the yCell Box
-	   ((SpinnerNumberModel) ySpinner.getModel()).setMaximum( (Integer)gridSizeY );
+	   ((SpinnerNumberModel) ySpinner.getModel()).setMaximum( (Integer)prog.getGridSizeY() );
    }
    
+   public void runEvent() {
+	   /*Disable the directional buttons */
+	   north.setEnabled(false);
+	   south.setEnabled(false);
+	   east.setEnabled(false);
+	   west.setEnabled(false);
+	   all.setEnabled(false);
+	   
+	   
+	   //TODO: Disable the ap table name and sample file and grid size
+	   
+	// Check if we have already sampled this cell location before.
+		  for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
+		  {
+		      if( prog.getGridX() == prog.getSamples().get( cellCheck ).getLoc().x && prog.getGridY() == prog.getSamples().get( cellCheck ).getLoc().y )
+		      {
+		            commentArea.append( "Repeating cell function not allowed\n" );
+		            return;
+		      }
+		   }
+		  
+		  prog.runCellSample();
+   }
+
+	public void saveResults()
+	{
+	   prog.finishSampling( "Dexter Lawn", "test comment" );
+	}
+	
    /**
    private void updateFieldsEvent()
    {
@@ -519,26 +542,6 @@ public class SamplingFrame extends JFrame implements ActionListener, ChangeListe
    }
    **/
 
-   private void runEvent()
-   {
-      /* Sample button was hit */
-	   
-	  // Check if we have already sampled this cell location before.
-	  for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
-	  {
-	      if( gridx == prog.getSamples().get( cellCheck ).getLoc().x && gridy == prog.getSamples().get( cellCheck ).getLoc().y )
-	      {
-	            commentArea.append( "Repeating cell function not allowed\n" );
-	            return;
-	      }
-	   }
-       prog.runCellSample( gridx, gridy, numSamples );
-   }
-
-   private void saveResults()
-   {
-      prog.finishSampling( sampleFileName, "Dexter Lawn", "test comment" );
-   }
 
    private boolean isInteger( String value )
    {
