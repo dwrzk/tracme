@@ -28,6 +28,7 @@ public class SampleProgram
       new LaptopFrame();
    }
 
+   
    /**
     * Initializes objects with default values.
     */
@@ -53,7 +54,7 @@ public class SampleProgram
    public void runCellSample()
    {
       // TODO: Manually set these for now (change in GUI).
-      apTableFileName = "calpoly_ap_table.txt";
+      //apTableFileName = "calpoly_ap_table.txt";
 
       // Get a string name of the current operating system so we can call the correct procedures.
       String osName = System.getProperty( "os.name", null );
@@ -103,8 +104,6 @@ public class SampleProgram
    /**
     * Outputs the results of the scan to file.
     * 
-    * @param sampleFileName
-    *           The name of the raw data file that will hold our samples.
     * @param locDesc
     *           A short description of the location (i.e. "Dexter's Lawn").
     * @param fileComment
@@ -133,6 +132,7 @@ public class SampleProgram
       sampleFileExt.writeToFile( "// GPS Coordinates:         " + "???" + "\n" );
       sampleFileExt.writeToFile( "// GIS Map Coordinates:     " + "???" + "\n" );
       sampleFileExt.writeToFile( "// Comment:                 " + fileComment + "\n" );
+      sampleFileExt.writeToFile( "// Direction:               " + direction + "\n");
       sampleFileExt.writeToFile( "//-------------------------------------------------------------------------------\n\n" );
 
       for( int i = 0; i < samples.size(); i++ )
@@ -359,6 +359,25 @@ public class SampleProgram
 	   return apTableFileName;
    }
    
+   /**
+    * Setter method for direction of sampling
+    * 
+    * @param val 
+    * 		Value to set direction to
+    */
+   public void setDirection( String val ) {
+	   direction = val;
+   }
+   
+   /**
+    * Accessor method for direction of sampling
+    * 
+    * @return direction we are doing the sampling
+    */
+   public String getDirection() {
+	   return direction;
+   }
+   
    private WriteFile sampleFile; // The raw data file that holds all of the generated samples for the current data set.
    private WriteFile sampleFileExt; // The extended data file with more information/comments about each sample and about the entire sample set.
 
@@ -387,6 +406,9 @@ public class SampleProgram
    private int gridy = 1;
    
    /** name of the output file we write to */
-   private String sampleFileName = "sample1.txt";
+   private String sampleFileName;
+   
+   /** the direction faced while sampling is done */
+   private String direction;
    
 }
