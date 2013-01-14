@@ -1,9 +1,5 @@
 
 /**
- * 
- */
-
-/**
  * This interface has methods that both the mobile sampling gui and the PC/Mac
  * sampling frame will use. Most methods are used to update fields of the sample program
  * 
