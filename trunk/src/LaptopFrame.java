@@ -1,6 +1,9 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.util.StringTokenizer;
+
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 
 
@@ -15,17 +18,22 @@ import javax.swing.event.*;
 public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, ChangeListener
 {
    //private static final long serialVersionUID = 1L;
-   private JPanel mainPanel, fieldsPanel, bottomPanel;
+   private JPanel mainPanel, fieldsPanel; //bottomPanel;
    private JButton run = new JButton( "Sample" );
-   private JButton updateFields = new JButton( "Update" );
    private JButton gis = new JButton( "GIS" );
    private JButton gps = new JButton( "GPS" );
+   
+   /** Check if initial run of program */
+   private boolean initialRun = true;
    
 	/** Instance of SampleProgram */
 	SampleProgram prog;	
    
    private JTextField outFile, numSamplesText, apFile;
+   
+   /***** Remove printArea for now
    private JTextArea printArea = new JTextArea();
+   ****/
    
    /** Generic console for GUI that will help user through program run */
    private JTextArea commentArea = new JTextArea();
@@ -39,8 +47,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
    
    /** Spinner component for y coordinate */
    private JSpinner ySpinner;
-   
-   
    
    /** Combo Box controlling gridSizeX value */
    private JComboBox<Integer> xGrid;
@@ -66,6 +72,16 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
    /** All Directions Radio Button */
    private JRadioButton all;
    
+   /** Button to open file chooser for output file */
+   private JButton openOutButton;
+
+   /** Button to open file chooser for output file */
+   private JButton openAPButton;
+
+   
+   /** Flag for setting of Change Event Action */
+   private boolean doAction = true;
+   
    /**
     * public static void main(String[] args) { LaptopFrame sample = new
     * LaptopFrame(); }
@@ -76,16 +92,18 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
    {
 	  super( "Sampling Program" );
       //setBounds(100,100,300,100);
-      setSize( 800, 800 );
+      setSize( 800, 700 );
       setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
       //Container con = this.getContentPane();
       setLayout( null );
-      prog = new SampleProgram( printArea );
+      prog = new SampleProgram( commentArea );
       initComponents();
       addToFieldPanel();
-      addToBottomPanel();
+      //addToBottomPanel();
       addToMainPanel();
       setVisible( true );
+      
+      setResizable( false );
    }
 
    /* Methods */
@@ -98,23 +116,25 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       mainPanel = new JPanel();
       mainPanel.setLayout( null );
       mainPanel.setLocation( 200, 10 );
-      mainPanel.setSize( 600, 580 );
+      mainPanel.setSize( 600, 680 );
       add( mainPanel );
 
       //Panel where user can change info of sample (ex: grid locations and sample file)
       fieldsPanel = new JPanel();
       fieldsPanel.setLayout( null );
-      fieldsPanel.setLocation( 0, 10 );
-      fieldsPanel.setSize( 180, 790 );
+      fieldsPanel.setLocation( 5, 10 );
+      fieldsPanel.setSize( 180, 600 );
+      fieldsPanel.setBorder(new LineBorder(Color.BLACK));
       add( fieldsPanel );
 
+ /**
       //Panel where GPS Location button and Run Button will go
       bottomPanel = new JPanel();
       bottomPanel.setLayout( null );
-      bottomPanel.setLocation( 200, 600 );
-      bottomPanel.setSize( 600, 200 );
+      bottomPanel.setLocation( 200, 700 );
+      bottomPanel.setSize( 600, 100 );
       add( bottomPanel );
-
+**/
 
       //Group of radio buttons for directions
       ButtonGroup bGroup = new ButtonGroup();
@@ -161,11 +181,30 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
    {
 	  
 	  /** Grid Size Coordinates **/
+	   
+	  JPanel gridSizePane = new JPanel( new GridBagLayout() );
+	  GridBagConstraints c = new GridBagConstraints();
+	  
+	  gridSizePane.setSize( 170, 75 );
+	  gridSizePane.setLocation( 5,10 );
+	  
 	  JLabel gridInfo = new JLabel();
-	  gridInfo.setText( "Grid Info" );
-	  fieldsPanel.add( gridInfo );
+	  gridInfo.setText( "Grid Size" );
+	  
+	  c.fill = GridBagConstraints.HORIZONTAL;
+	  c.gridx = 0;
+	  c.gridy = 0;
+	  c.anchor = GridBagConstraints.LINE_START;
+	  //c.weightx = 1;
+	  //c.weighty = 0.5; 
+	  c.gridwidth = 3;
+	  c.ipady = 5;
+	  
+	  gridSizePane.add( gridInfo, c );
+	  
+	  /*fieldsPanel.add( gridInfo );
 	  gridInfo.setLocation( 10, 0 );
-	  gridInfo.setSize( 200, 30 );
+	  gridInfo.setSize( 200, 30 );*/
 	  Integer[] xSize = new Integer[100];
 	  Integer[] ySize = new Integer[100];
 	  
@@ -182,6 +221,38 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 	  yGrid.setSelectedIndex(2);
 	  yGrid.addActionListener(this);
 	  
+	  c.fill = GridBagConstraints.HORIZONTAL;
+	  c.ipady = 30;
+	  c.weightx = 0.0;
+	  c.gridx = 0;
+	  c.gridy = 1;
+	  c.gridwidth = 1;
+	  c.insets = new Insets( 0, 10, 5, 10 );
+	  gridSizePane.add( xGrid, c );
+
+	  JLabel x = new JLabel( "X" );
+	  c.gridwidth = 1;
+	  c.ipady = 30;
+	  //c.weightx = 0.3;
+	  c.gridx = 1;
+	  c.gridy = 1;
+	  c.insets = new Insets( 0, 0, 5, 0 );
+	  x.setHorizontalAlignment( SwingConstants.CENTER );
+	  gridSizePane.add( x, c );
+	  
+	  
+	  c.ipady = 30;
+	  c.weightx = 0.0;
+	  c.gridx = 2;
+	  c.gridy = 1;
+	  c.gridwidth = 1;
+	  c.insets = new Insets( 0, 10, 5, 10 );
+	  c.fill = GridBagConstraints.HORIZONTAL;
+	  c.anchor = GridBagConstraints.LINE_START;
+	  yGrid.setPreferredSize(new Dimension(30, 50));
+	  gridSizePane.add( yGrid, c );
+	  
+	  /*
 	  fieldsPanel.add( xGrid );
 	  fieldsPanel.add( yGrid );
 	  JLabel x = new JLabel( "X" );
@@ -192,7 +263,10 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 	  yGrid.setLocation( 75, 50 );
 	  xGrid.setSize( 45, 20 );
 	  yGrid.setSize( 45, 20 );
+*/
 
+	  fieldsPanel.add( gridSizePane );
+	  
       JLabel fileLabel = new JLabel( "Output File" );
       fieldsPanel.add( fileLabel );
       fileLabel.setLocation( 10, 80 );
@@ -202,17 +276,35 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       fieldsPanel.add( outFile );
       outFile.setLocation( 10, 105 );
       outFile.setSize( 100, 25 );
+      outFile.setText("SampleFile.txt");
 
+      Font f = new Font(Font.SANS_SERIF, 10, 9 );
+      
+      openOutButton = new JButton( "open" );
+      openOutButton.setFont(f);
+      fieldsPanel.add( openOutButton );
+      openOutButton.setSize( 55, 25 );
+      openOutButton.setLocation( 115, 105 );
+      openOutButton.addActionListener(this);
+   
+      
       JLabel APLabel = new JLabel( "AP File" );
       fieldsPanel.add( APLabel );
       APLabel.setLocation( 10, 140 );
       APLabel.setSize( 100, 20 );
-
+   
       apFile = new JTextField();
       fieldsPanel.add( apFile );
       apFile.setLocation( 10, 165 );
       apFile.setSize( 100, 25 );
+      apFile.setText("CP_APTable.txt");
 
+      openAPButton = new JButton( "open" );
+      openAPButton.setFont(f);
+      fieldsPanel.add( openAPButton );
+      openAPButton.setSize( 55, 25 );
+      openAPButton.setLocation( 115, 165 );
+      openAPButton.addActionListener(this);
 
       JLabel gridXLabel = new JLabel( "X Coord" );
       fieldsPanel.add( gridXLabel );
@@ -223,7 +315,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       xSpinner = new JSpinner( gridXLoc1 );
       fieldsPanel.add( xSpinner );
       xSpinner.setLocation( 10, 225 );
-      xSpinner.setSize( 40, 50 );
+      xSpinner.setSize( 60, 50 );
       xSpinner.addChangeListener( this );
       
       
@@ -236,7 +328,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       ySpinner = new JSpinner( gridYLoc1 );
       fieldsPanel.add( ySpinner );
       ySpinner.setLocation( 90, 225 );
-      ySpinner.setSize( 40, 50 );
+      ySpinner.setSize( 60, 50 );
       ySpinner.addChangeListener( this );
 
       JLabel samples = new JLabel( "Sample Size" );
@@ -248,22 +340,18 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       numSamplesText.setText( ((Integer)prog.getNumSamples()).toString() );
       fieldsPanel.add( numSamplesText );
       numSamplesText.setLocation( 10, 325 );
-      numSamplesText.setSize( 50, 75 );
-
-
-      fieldsPanel.add( updateFields );
-      updateFields.setLocation( 70, 325 );
-      updateFields.setSize( 75, 50 );
-      updateFields.addActionListener( this );
-            
+      numSamplesText.setSize( 50, 50 );
 
       fieldsPanel.add( radioPanel );
       radioPanel.setLocation( 10, 415 );
       radioPanel.setSize( 100, 100 );
       
       return;
+      
    }
 
+ /***
+   
    private void addToBottomPanel()
    {
 	   
@@ -286,37 +374,58 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       run.addActionListener( this );  
 
    }
+***/
 
    private void addToMainPanel()
    {
       System.out.println( "Add Table To Main Panel Here" );
+      
+      /**** Take out the print area for now
       mainPanel.add( printArea );
       printArea.setLocation( 10, 10 );
       printArea.setSize( 500, 500 );
-      JLabel cellInfo = new JLabel();
-      cellInfo.setText( "Grid Size: 3x3    " + "    Cell Length: 10ft");
-      mainPanel.add( cellInfo );
-      cellInfo.setLocation( 10, 510 );
-      cellInfo.setSize( 500, 15 );
-      cellInfo.setHorizontalAlignment( SwingConstants.LEFT );
+      ***/
+      
       mainPanel.add( commentArea );
-      //commentArea.setLocation( 10, 530 );
-      commentArea.setSize( 500, 50 );
+      commentArea.setLocation( 10, 10 ); //was 530 (y)
+      commentArea.setSize( 500, 500 );  //was 50 (y)
       JScrollPane scroll = new JScrollPane( commentArea );
-      //scroll.setVeritcalScrollBarPolicy( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
       mainPanel.add( scroll );
-      scroll.setLocation( 10, 530 );
-      scroll.setSize( 500, 50 );
+      scroll.setLocation( 10, 10 );
+      scroll.setSize( 500, 500 );
+      
+      mainPanel.add( gis );
+	  gis.setLocation( 10, 525 );
+	  gis.setSize( 100, 50 );
+	  
+	  mainPanel.add( gps );
+      gps.setLocation( 120, 525 );
+      gps.setSize( 100, 50 );
+	  
+      mainPanel.add( save );
+      save.setLocation( 230, 525 );
+      save.setSize( 100, 50 );
+      save.addActionListener( this );
+      
+      mainPanel.add( run );
+      run.setLocation( 340, 525 );
+      run.setSize( 100, 50 );
+      run.addActionListener( this );
+      
    }
 
    public void stateChanged( ChangeEvent e )
    {
-	   if ( e.getSource() == xSpinner ) {
-		   updateXLoc();
+	   if ( doAction ) {
+	      if ( e.getSource() == xSpinner ) {
+		     updateXLoc();
+	      }
+	      else if ( e.getSource() == ySpinner ) {
+		     updateYLoc();
+	      }
 	   }
-	   else if ( e.getSource() == ySpinner ) {
-		   updateYLoc();
-	   }
+	   //Reset action flag to true
+	   doAction = true;
    }
  
    public void updateXLoc() {
@@ -343,12 +452,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
    
    public void actionPerformed( ActionEvent evt )
    {
-      if( evt.getSource() == updateFields )
-      {
-    	 updateSamples();
-         //updateFieldsEvent();
-      }
-      else if( evt.getSource() == run )
+      if( evt.getSource() == run )
       {
          runEvent();
       }
@@ -367,18 +471,35 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       else if ( evt.getSource() == north )
       {
     	 commentArea.append("Direction set to north\n");
+    	 prog.setDirection("North");
       }
       else if ( evt.getSource() == south )
       {
     	  commentArea.append("Direction set to south\n");
+    	  prog.setDirection("South");
       }
       else if ( evt.getSource() == east )
       {
     	  commentArea.append("Direction set to east\n");
+    	  prog.setDirection("East");
       }
       else if ( evt.getSource() == west )
       {
     	  commentArea.append("Direction set to west\n");
+    	  prog.setDirection("West");
+      }
+      else if ( evt.getSource() == all )
+      {
+    	  commentArea.append("Direction set to all directions\n");
+    	  prog.setDirection("North, South, East, West");
+      }
+      else if ( evt.getSource() == openOutButton )
+      {
+    	  openFile("Output");
+      }
+      else if ( evt.getSource() == openAPButton )
+      {
+    	  openFile("AP");
       }
       else
       {
@@ -387,7 +508,47 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       return;
    }
 
+   public void openFile(String fileType) {
+	   String openedFile;
+	   openedFile = useFileChooser();
+	   
+	   String delims = "[.]";
+	   String[] tokens = openedFile.split(delims);
+
+	   // Check if there was an extension to the file
+	   if (tokens.length <= 1 ) {
+		   return;
+	   }
+	   
+	   
+	   if (tokens[tokens.length-1].trim().toLowerCase().equals("txt") ) {
+		   if (fileType.equals("Output")) {
+		      outFile.setText( openedFile );
+		   }
+		   else if ( fileType.equals("AP") ) {
+			   apFile.setText( openedFile );
+		   }
+	   }
+	   else {
+		   JOptionPane.showMessageDialog( this, "Must open a .txt file!" );
+	   }
+	   
+   }
+   
+   public String useFileChooser() {
+	   int val;
+	   JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+
+	   val = chooser.showOpenDialog(this);
+	   if ( val == JFileChooser.APPROVE_OPTION) {
+		   return chooser.getSelectedFile().getName();
+	   }
+	   
+	   return "NULL";
+   }
+   
    public void updateSamples() {
+	   
 	      // Check if value input into NumSamples text field is a number.
 	      if( !isInteger( numSamplesText.getText() ) )
 	      {
@@ -408,17 +569,22 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
    public void updateGridX() {
 	  prog.setGridSizeX((Integer)xGrid.getSelectedItem());
 	  commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX() + "x" + prog.getGridSizeY() + "\n" );
+	  
+	  doAction = false;
 	  ((SpinnerNumberModel) xSpinner.getModel()).setMaximum( (Integer)prog.getGridSizeX() );
    }
    
    public void updateGridY() {
 	   prog.setGridSizeY((Integer)yGrid.getSelectedItem());
-	   commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX() + "x" + prog.getGridSizeY() + "\n" );
-	   //TODO: Update the bounds of the yCell Box
+	   commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX() + "x" + prog.getGridSizeY() + "\n" ); 
+	   doAction = false;
 	   ((SpinnerNumberModel) ySpinner.getModel()).setMaximum( (Integer)prog.getGridSizeY() );
    }
    
    public void runEvent() {
+	   
+	 if (initialRun) {
+		 
 	   /*Disable the directional buttons */
 	   north.setEnabled(false);
 	   south.setEnabled(false);
@@ -426,8 +592,24 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 	   west.setEnabled(false);
 	   all.setEnabled(false);
 	   
+	   /* Disable adjustment of grid size */
+	   xGrid.setEnabled(false);
+	   yGrid.setEnabled(false);
 	   
-	   //TODO: Disable the ap table name and sample file and grid size
+	   // Set the files we will read from (AP) and write to (output)
+	   prog.setAPFileName(apFile.getText());
+	   prog.setSampleFileName(outFile.getText());
+	   
+	   /* No longer can change files we are using */
+	   apFile.setEnabled(false);
+	   outFile.setEnabled(false);
+	   
+	   initialRun = false;
+	   
+	 }
+	  
+	 
+	 updateSamples();
 	   
 	// Check if we have already sampled this cell location before.
 		  for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
@@ -439,6 +621,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 		      }
 		   }
 		  
+		  
 		  prog.runCellSample();
    }
 
@@ -447,100 +630,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 	   prog.finishSampling( "Dexter Lawn", "test comment" );
 	}
 	
-   /**
-   private void updateFieldsEvent()
-   {
-      // Update Fields button was clicked
-      if( gridXLoc.getText() == "" && gridYLoc.getText() == "" && outFile.getText() == "" && numSamplesText.getText() == "")
-      {
-         System.out.println( "Nothing to update\n" );
-         commentArea.append( "Nothing to update\n" );
-         return;
-      }
-
-      // Check if output file was specified
-      if (outFile.getText().toLowerCase().contains( ".txt" )) {
-         sampleFileName = outFile.getText();
-         commentArea.append( "Output file set to: " + sampleFileName + "\n" );
-         outFile.setText( "" );
-      }
-      // Check if value input into grid X text field is a number.
-      if( !isInteger( gridXLoc.getText() ) )
-      {
-         System.out.println( "X cell location invalid\n" );
-         commentArea.append( "X cell location invalid\n" );
-         return;
-      }
-
-      // Check if value input into grid Y text field is a number.
-      if( !isInteger( gridYLoc.getText() ) )
-      {
-         System.out.println( "Y cell location invalid\n" );
-         commentArea.append( "Y cell location invalid\n" );
-         return;
-      }
-
-      // Check if value input into NumSamples text field is a number.
-      if( !isInteger( numSamplesText.getText() ) )
-      {
-         System.out.println( "Number of samples invalid\n" );
-         commentArea.append( "Number of samples invalid\n" );
-         return;
-      } 
-
-      // Convert the grid coordinates into integers to check if they are valid.
-      int readGridX = Integer.parseInt( gridXLoc.getText() );
-      int readGridY = Integer.parseInt( gridYLoc.getText() );
-      int readSamples = Integer.parseInt( numSamplesText.getText() );
-
-      // Make sure the position integers are valid (within range).
-      if( readGridX <= 0 )
-      {
-         System.out.println( "The X cell location " + readGridX + " must be > 0" );
-         commentArea.append( "The X cell location " + readGridX + " must be > 0\n" );
-         return;
-      }
-      else if( readGridY <= 0 )
-      {
-         System.out.println( "The Y cell location " + readGridY + " must be > 0" );
-         commentArea.append( "The Y cell location " + readGridY + " must be > 0\n" );
-         return;
-      }
-      else if( readSamples <= 0 )
-      {
-         System.out.println( "The Sample Size " + readSamples + " must be > 0" );
-         commentArea.append( "The Sample Size " + readSamples + " must be > 0\n" );
-         return;
-      }
-
-      // Check if we have already sampled this cell location before.
-      for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
-      {
-         if( readGridX == prog.getSamples().get( cellCheck ).getLoc().x && readGridY == prog.getSamples().get( cellCheck ).getLoc().y )
-         {
-            System.out.println( "Repeating cell function not allowed" );
-            commentArea.append( "Repeating cell function not allowed\n" );
-            return;
-         }
-      }
-
-      //Set grid values in sample program
-      System.out.println( "Grid X should be updated\n" );
-      commentArea.append( "Grid X location updated to: " + readGridX + "\n" );
-      gridx = readGridX;
-
-      System.out.println( "Grid Y should be updated\n" );
-      commentArea.append( "Grid Y location updated to: " + readGridY + "\n" );
-      gridy = readGridY;
-      numSamples = readSamples;
-      
-
-      gridXLoc.setText( "" );
-      gridYLoc.setText( "" );
-      outFile.setText( "" );
-      numSamplesText.setText( "" );
-   }
-   **/
 
 
    private boolean isInteger( String value )
