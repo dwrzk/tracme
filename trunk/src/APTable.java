@@ -9,6 +9,7 @@ import java.io.*;
  * increment the ID by 1.
  * 
  * @author James Humphrey
+ * @author Kwaku Farkye
  */
 public class APTable
 {
@@ -124,7 +125,7 @@ public class APTable
       FileInputStream fin;
 
       try
-      {
+      {  
          // Open the input stream.
          fin = new FileInputStream( tableName );
 
@@ -158,7 +159,18 @@ public class APTable
       }
       catch( IOException e )
       {
-         System.out.println( "Unable to read from file " + tableName + ". Do you want to create a file by that name?" );
+    	 if (multiAttempts) {
+            System.out.println("Load failed: Exit Program\n");
+            System.exit(0);
+    	 }
+    	 else {
+    		 System.out.println( "Unable to read from file " + tableName + ". Do you want to create a file by that name?" );
+             //Attempt to create the file
+             createFile(tableName);
+             //File should have been created, so now attempt to load again
+             multiAttempts = true;
+             loadTable(tableName); 
+    	 }
       }
       catch( Exception e )
       {
@@ -166,6 +178,22 @@ public class APTable
       }
    }
 
+   /**
+    * Create a new file with the specified name
+    * 
+    * @param fileName
+    * 		The File that will be created
+    */
+   public void createFile(String fileName) {
+       File newFile = new File( fileName );
+       try {
+		  newFile.createNewFile();
+       } catch (IOException e) {
+		  System.out.println("Couldnt create new file. Exiting program");
+		  System.exit(0);
+       }
+   }
+   
    /**
     * Accessor method for the list of access points loaded in from the table.
     * 
@@ -193,4 +221,5 @@ public class APTable
    private ArrayList< AccessPoint > aps; // A list of APs stored in the table.
    private String tableName; // The file name of the AP table that is loaded.
    boolean writeDebugFile; // Indicates if we want to write another debug file which will include more information about the APs.
+   private boolean multiAttempts = false; //Flag to see if there were multiple attempts of loading the access point table.
 }
