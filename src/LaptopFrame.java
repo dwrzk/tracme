@@ -1,10 +1,13 @@
 import java.awt.*;
+
 import java.awt.event.*;
 import java.util.StringTokenizer;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
+
+import java.io.*;
 
 /**
  * This file sets up the gui for SampleProgram.java User will be able to set the
@@ -137,6 +140,9 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       north = new JRadioButton( "North" );
       north.setActionCommand( "North" );
       north.setSelected( true );
+      
+      //Set the direction to north initially
+      prog.setDirection( "North" );
 
       south = new JRadioButton( "South" );
       south.setActionCommand( "South" );
@@ -267,6 +273,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       outFile.setLocation( 10, 105 );
       outFile.setSize( 100, 25 );
       outFile.setText( "SampleFile.txt" );
+      //prog.setSampleFileName( "SampleFile.txt" );
 
       Font f = new Font( Font.SANS_SERIF, 10, 9 );
 
@@ -582,7 +589,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
          // Set the files we will read from (AP) and write to (output)
          prog.setAPFileName( apFile.getText() );
-         prog.setSampleFileName( outFile.getText() );
 
          initialRun = false;
 
@@ -618,14 +624,29 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
       /* No longer can change files we are using */
       apFile.setEnabled( enable );
-      outFile.setEnabled( enable );
+      //outFile.setEnabled( enable );
    }
 
    public void saveResults()
    {
+	      prog.setSampleFileName( outFile.getText() );
+		  File f = new File( prog.getSampleFileName() );
+		  if ( f.exists() ) {
+			  //TODO: Print message box asking if they want to override the sample file, otherwise have them input a new file
+			  commentArea.append("This output file already exists!\n");
+			  return;
+		  }
+		  
       prog.finishSampling( "Dexter Lawn", "test comment" );
       enableGUIFields( true );
       initialRun = true;
+      
+      //Reset grid location to 1x1
+      doAction = false;
+      xSpinner.getModel().setValue(1);
+      doAction = false;
+      ySpinner.getModel().setValue(1);
+      
    }
 
    private boolean isInteger( String value )
