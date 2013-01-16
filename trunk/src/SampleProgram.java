@@ -313,7 +313,7 @@ public class SampleProgram
    }
    
    /**
-    * Accessor method for grid size in y direction
+    * Accessor method for grid location in y direction
     * 
     * @return cell location in y direction
     */
