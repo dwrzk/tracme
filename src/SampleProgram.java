@@ -397,7 +397,7 @@ public class SampleProgram
    private int gridSizeY = 3;
    
    /** The number of samples we need to do for the current position */
-   private int numSamples = 5;
+   private int numSamples = 20;
    
    /** The current Cell Location in X direction */
    private int gridx = 1;

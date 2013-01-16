@@ -82,6 +82,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    /** Flag for setting of Change Event Action */
    private boolean doAction = true;
+   
 
    /**
     * public static void main(String[] args) { LaptopFrame sample = new
@@ -341,6 +342,9 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       radioPanel.setLocation( 10, 415 );
       radioPanel.setSize( 100, 100 );
 
+      //Disable the save button until the correct amount of samples have been done
+      save.setEnabled(false);
+      
       return;
 
    }
@@ -607,6 +611,13 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       }
 
       prog.runCellSample();
+      
+      
+      //Check if correct amount of samples have been done
+      if (prog.getSamples().size() == (xGrid.getSelectedIndex() * yGrid.getSelectedIndex()) )
+      {
+    	  save.setEnabled(true);
+      }
    }
 
    public void enableGUIFields( boolean enable )
@@ -629,13 +640,13 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    public void saveResults()
    {
-	      prog.setSampleFileName( outFile.getText() );
-		  File f = new File( prog.getSampleFileName() );
-		  if ( f.exists() ) {
-			  //TODO: Print message box asking if they want to override the sample file, otherwise have them input a new file
-			  commentArea.append("This output file already exists!\n");
-			  return;
-		  }
+	  prog.setSampleFileName( outFile.getText() );
+	  File f = new File( prog.getSampleFileName() );
+	  if ( f.exists() ) {
+		  //TODO: Print message box asking if they want to override the sample file, otherwise have them input a new file
+		  commentArea.append("This output file already exists!\n");
+		  return;
+	  }
 		  
       prog.finishSampling( "Dexter Lawn", "test comment" );
       enableGUIFields( true );
@@ -646,6 +657,11 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       xSpinner.getModel().setValue(1);
       doAction = false;
       ySpinner.getModel().setValue(1);
+      
+      //Clear the samples array list
+      prog.clearScan();
+      
+      save.setEnabled(false);
       
    }
 
