@@ -134,6 +134,12 @@ public class SampleProgram
       sampleFileExt.writeToFile( "// Comment:                 " + fileComment + "\n" );
       sampleFileExt.writeToFile( "// Direction:               " + direction + "\n");
       sampleFileExt.writeToFile( "//-------------------------------------------------------------------------------\n\n" );
+      
+      String printString = new String();
+      
+      // Write the max x/y coordinates and the number of samples at top of file.
+      printString = getGridSizeX() + "\n" + getGridSizeY() + "\n" + apTable.getAPTable().size() + "\n";
+      sampleFile.writeToFile( printString );
 
       for( int i = 0; i < samples.size(); i++ )
       {
@@ -146,8 +152,7 @@ public class SampleProgram
          printArea.append( "###" + locx + "," + locy + "\n" );
          sampleFile.writeToFile( "###" + locx + "," + locy + "\n" );
          sampleFileExt.writeToFile( "###" + locx + "," + locy + "\n" );
-
-         String printString = new String();
+         
          // Write the current sample to the file.
          for( int j = 0; j < samples.get( i ).getSamples().size(); j++ )
          {
@@ -169,12 +174,6 @@ public class SampleProgram
             sampleFile.writeToFile( "\n" );
             sampleFileExt.writeToFile( "\n" );
          }
-
-         // Move to the next line.
-         /*printArea.append( "\n" );
-         System.out.println( "" );
-         sampleFile.writeToFile( "\n" );
-         sampleFileExt.writeToFile( "\n" );*/
       }
    }
 
