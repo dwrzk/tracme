@@ -3,9 +3,8 @@ import java.io.PrintWriter;
 import java.io.IOException;
 
 /**
- * Class for reading and writing to files in a cross-platform way.
- * This class is based on code from
- * homeandlearn.co.uk/java/write_to_textfile.html.
+ * Class for reading and writing to files in a cross-platform way. This class is
+ * based on code from homeandlearn.co.uk/java/write_to_textfile.html.
  * 
  * @author James Humphrey
  */
@@ -20,8 +19,7 @@ public class WriteFile
     */
    public WriteFile( String path )
    {
-      this.path = path;
-      this.append = true;
+      this( path, true );
    }
 
    /**
@@ -35,7 +33,15 @@ public class WriteFile
    public WriteFile( String path, boolean append )
    {
       this.path = path;
-      this.append = append;
+      try
+      {
+         print_line = new PrintWriter( new FileWriter( path, append ) );
+      }
+      catch( IOException e )
+      {
+         e.printStackTrace();
+         System.out.println( "Failed to open file " + path );
+      }
    }
 
    /**
@@ -48,9 +54,7 @@ public class WriteFile
    {
       try
       {
-         PrintWriter print_line = new PrintWriter( new FileWriter( path, append ) );
          print_line.print( text );
-         print_line.close();
 
          // We need to manually check for any errors on Android because it doesn't throw an IOException.
          if( print_line.checkError() )
@@ -59,18 +63,18 @@ public class WriteFile
             // TODO: Implement an error message in Android.
          }
       }
-      catch( IOException e )
+      catch( Exception e )
       {
          e.printStackTrace();
          System.out.println( "Failed to write to file " + path );
       }
    }
-   
+
    public String getPath()
    {
       return path;
    }
 
    private String path; // The file name including its path.
-   private boolean append = true; // Indicates if we want to append to the file when writing.
+   PrintWriter print_line; // Interface for writing a lint to the file.
 }
