@@ -630,7 +630,8 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
       prog.runCellSample();
       
-      
+      commentArea.append("Number of samples done: " + prog.getSamples().size() + "\n");
+      commentArea.append("Number of samples needed: " + (xGrid.getSelectedIndex() * yGrid.getSelectedIndex()) + "\n");
       //Check if correct amount of samples have been done
       if (prog.getSamples().size() == (xGrid.getSelectedIndex() * yGrid.getSelectedIndex()) )
       {
