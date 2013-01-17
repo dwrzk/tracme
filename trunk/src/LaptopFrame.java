@@ -49,7 +49,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    /** Spinner component for y coordinate */
    private JSpinner ySpinner;
-   
+
    /** Spinner component for number of samples */
    private JSpinner samplesSpinner;
 
@@ -85,7 +85,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    /** Flag for setting of Change Event Action */
    private boolean doAction = true;
-   
 
    /**
     * public static void main(String[] args) { LaptopFrame sample = new
@@ -144,7 +143,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       north = new JRadioButton( "North" );
       north.setActionCommand( "North" );
       north.setSelected( true );
-      
+
       //Set the direction to north initially
       prog.setDirection( "North" );
 
@@ -342,15 +341,14 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       samplesSpinner.setLocation( 10, 325 );
       samplesSpinner.setSize( 50, 50 );
       samplesSpinner.addChangeListener( this );
-      
-      
+
       fieldsPanel.add( radioPanel );
       radioPanel.setLocation( 10, 415 );
       radioPanel.setSize( 100, 100 );
 
       //Disable the save button until the correct amount of samples have been done
-      save.setEnabled(false);
-      
+      save.setEnabled( false );
+
       return;
 
    }
@@ -421,9 +419,9 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
          {
             updateYLoc();
          }
-         else if ( e.getSource() == samplesSpinner )
+         else if( e.getSource() == samplesSpinner )
          {
-        	updateSamples(); 
+            updateSamples();
          }
       }
       //Reset action flag to true
@@ -451,7 +449,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       commentArea.append( "Sample Location changed to: (" + prog.getGridX() + "," + prog.getGridY() + ")\n" );
 
    }
-   
+
    public void actionPerformed( ActionEvent evt )
    {
       if( evt.getSource() == run )
@@ -557,22 +555,22 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    public void updateSamples()
    {
-	   int readSamples;
-	   String time;
-	   
-	   readSamples = (Integer)samplesSpinner.getModel().getValue();
-	   prog.setNumSamples( readSamples );
-	  
-	   if (prog.getNumSamples() == 1 )
-	   {
-		   time = "time"; 
-	   }
-	   else
-	   {
-		   time = "times";
-	   }
-	   commentArea.append( "Program will now sample " + prog.getNumSamples() + " " + time + "\n" );
-	   
+      int readSamples;
+      String time;
+
+      readSamples = (Integer)samplesSpinner.getModel().getValue();
+      prog.setNumSamples( readSamples );
+
+      if( prog.getNumSamples() == 1 )
+      {
+         time = "time";
+      }
+      else
+      {
+         time = "times";
+      }
+      commentArea.append( "Program will now sample " + prog.getNumSamples() + " " + time + "\n" );
+
    }
 
    public void updateGridX()
@@ -613,33 +611,32 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       {
          if( prog.getGridX() == prog.getSamples().get( cellCheck ).getLoc().x && prog.getGridY() == prog.getSamples().get( cellCheck ).getLoc().y )
          {
-            int option = JOptionPane.showConfirmDialog( this, "Cell has already been done, would you like to re-sample?",
-            			"Repeat Cell Confirmation", JOptionPane.YES_NO_OPTION );
-            if ( option == JOptionPane.YES_OPTION ) 
+            int option = JOptionPane.showConfirmDialog( this, "Cell has already been done, would you like to re-sample?", "Repeat Cell Confirmation", JOptionPane.YES_NO_OPTION );
+            if( option == JOptionPane.YES_OPTION )
             {
-            	//Redo the sampling for this cell
-            	prog.redoCellSample( prog.getGridX(), prog.getGridY() );
+               //Redo the sampling for this cell
+               prog.redoCellSample( prog.getGridX(), prog.getGridY() );
             }
-            else 
+            else
             {
-            	commentArea.append( "Repeating cell function not allowed\n" );
+               commentArea.append( "Repeating cell function not allowed\n" );
             }
             return;
          }
       }
 
       prog.runCellSample();
-      
-      commentArea.append("Number of samples done: " + prog.getSamples().size() + "\n");
-      commentArea.append("Number of samples needed: " + (xGrid.getSelectedIndex() * yGrid.getSelectedIndex()) + "\n");
+
+      commentArea.append( "Number of samples done: " + prog.getSamples().size() + "\n" );
+      commentArea.append( "Number of samples needed: " + ( (Integer)xGrid.getSelectedItem() * (Integer)yGrid.getSelectedItem() ) + "\n" );
       //Check if correct amount of samples have been done
-      if (prog.getSamples().size() == (xGrid.getSelectedIndex() * yGrid.getSelectedIndex()) )
+      if( prog.getSamples().size() == (Integer)xGrid.getSelectedItem() * (Integer)yGrid.getSelectedItem() )
       {
-    	  save.setEnabled(true);
+         save.setEnabled( true );
       }
-      
+
       commentArea.append( "Sample for location: (" + prog.getGridX() + "," + prog.getGridY() + ") is finished\n" );
-      
+
    }
 
    public void enableGUIFields( boolean enable )
@@ -662,29 +659,30 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    public void saveResults()
    {
-	  prog.setSampleFileName( outFile.getText() );
-	  File f = new File( prog.getSampleFileName() );
-	  if ( f.exists() ) {
-		  //TODO: Print message box asking if they want to override the sample file, otherwise have them input a new file
-		  commentArea.append("This output file already exists!\n");
-		  return;
-	  }
-		  
+      prog.setSampleFileName( outFile.getText() );
+      File f = new File( prog.getSampleFileName() );
+      if( f.exists() )
+      {
+         //TODO: Print message box asking if they want to override the sample file, otherwise have them input a new file
+         commentArea.append( "This output file already exists!\n" );
+         return;
+      }
+
       prog.finishSampling( "Dexter Lawn", "test comment" );
       enableGUIFields( true );
       initialRun = true;
-      
+
       //Reset grid location to 1x1
       doAction = false;
-      xSpinner.getModel().setValue(1);
+      xSpinner.getModel().setValue( 1 );
       doAction = false;
-      ySpinner.getModel().setValue(1);
-      
+      ySpinner.getModel().setValue( 1 );
+
       //Clear the samples array list
       prog.clearScan();
-      
-      save.setEnabled(false);
-      
+
+      save.setEnabled( false );
+
    }
 
    private boolean isInteger( String value )
