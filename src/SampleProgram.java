@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.awt.Point;
 import java.text.DateFormat;
 import java.util.Date;
 import javax.swing.JTextArea;
@@ -78,6 +79,7 @@ public class SampleProgram
          System.exit( 0 );
       }
 
+      
       // Create a new cell sample to add to the sample scanner.
       CellSample newCellSample = new CellSample();
       newCellSample.setLoc( gridx, gridy );
@@ -101,6 +103,47 @@ public class SampleProgram
 
    }
 
+   /**
+    * Re-sample the cell specified by the grid locations
+    * 
+    * @param gridLocX
+    * 		x coordinate of cell
+    * @param gridLocY
+    * 		y coordinate of cell
+    */
+   public void redoCellSample( int gridLocX, int gridLocY )
+   {
+	   //Create new test point from grid locations
+	   Point tstPoint = new Point( gridLocX, gridLocY );
+	   
+	   for ( int i = 0; i < samples.size(); i++ ) 
+	   {
+		   if ( samples.get(i).getLoc().equals(tstPoint) ) 
+		   {
+			   //Points are equal to each other, so remove the sample set from the array list
+			   samples.get(i).getSamples().clear();
+			   
+			   // Run the scan and add to the sample set
+			   for ( int k = 0; k < numSamples; k++ )
+			   {
+				   	 Sample newSample = new Sample();
+				   	 
+				     // Set the output of the WiFi scanner to the new sample for this cell.
+			         newSample.setScan( wifiScanner.scan() );
+
+			         // Map all AP BSSID to its unique ID from the AP table.
+			         apTable.mapAPsToID( newSample.getScan(), true );
+
+			         // Add the newest sample to the latest cell.
+			         samples.get( i ).getSamples().add( newSample );
+			         
+			   }
+			   break;
+		   }
+	   }
+	   
+   }
+   
    /**
     * Outputs the results of the scan to file.
     * 
@@ -137,7 +180,7 @@ public class SampleProgram
       
       String printString = new String();
       
-      // Write the max x/y coordinates and the number of samples at top of file.
+      // Write the max x/y coordinates and the number of access points at top of file.
       printString = getGridSizeX() + "\n" + getGridSizeY() + "\n" + apTable.getAPTable().size() + "\n";
       sampleFile.writeToFile( printString );
 

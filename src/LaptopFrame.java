@@ -49,6 +49,9 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    /** Spinner component for y coordinate */
    private JSpinner ySpinner;
+   
+   /** Spinner component for number of samples */
+   private JSpinner samplesSpinner;
 
    /** Combo Box controlling gridSizeX value */
    private JComboBox xGrid;
@@ -218,7 +221,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       }
 
       xGrid = new JComboBox( xSize );
-      yGrid = new JComboBox( ySize );
+      yGrid = new JComboBox( xSize );
       //Initialize to 3x3 grid
       xGrid.setSelectedIndex( 2 );
       xGrid.addActionListener( this );
@@ -332,12 +335,15 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       samples.setLocation( 10, 300 );
       samples.setSize( 100, 20 );
 
-      numSamplesText = new JTextField();
-      numSamplesText.setText( ( (Integer)prog.getNumSamples() ).toString() );
-      fieldsPanel.add( numSamplesText );
-      numSamplesText.setLocation( 10, 325 );
-      numSamplesText.setSize( 50, 50 );
-
+      SpinnerNumberModel sampleAmt = new SpinnerNumberModel( 1, 1, 100, 1 );
+      samplesSpinner = new JSpinner( sampleAmt );
+      fieldsPanel.add( samplesSpinner );
+      samplesSpinner.getModel().setValue( prog.getNumSamples() );
+      samplesSpinner.setLocation( 10, 325 );
+      samplesSpinner.setSize( 50, 50 );
+      samplesSpinner.addChangeListener( this );
+      
+      
       fieldsPanel.add( radioPanel );
       radioPanel.setLocation( 10, 415 );
       radioPanel.setSize( 100, 100 );
@@ -415,6 +421,10 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
          {
             updateYLoc();
          }
+         else if ( e.getSource() == samplesSpinner )
+         {
+        	updateSamples(); 
+         }
       }
       //Reset action flag to true
       doAction = true;
@@ -427,7 +437,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       readXLoc = (Integer)xSpinner.getModel().getValue();
       prog.setGridX( readXLoc );
 
-      commentArea.append( "sample Location changed to: (" + prog.getGridX() + "," + prog.getGridY() + ")\n" );
+      commentArea.append( "Sample Location changed to: (" + prog.getGridX() + "," + prog.getGridY() + ")\n" );
 
    }
 
@@ -438,10 +448,10 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       readYLoc = (Integer)ySpinner.getModel().getValue();
       prog.setGridY( readYLoc );
 
-      commentArea.append( "sample Location changed to: (" + prog.getGridX() + "," + prog.getGridY() + ")\n" );
+      commentArea.append( "Sample Location changed to: (" + prog.getGridX() + "," + prog.getGridY() + ")\n" );
 
    }
-
+   
    public void actionPerformed( ActionEvent evt )
    {
       if( evt.getSource() == run )
@@ -529,7 +539,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       {
          JOptionPane.showMessageDialog( this, "Must open a .txt file!" );
       }
-
    }
 
    public String useFileChooser()
@@ -548,21 +557,22 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
    public void updateSamples()
    {
-
-      // Check if value input into NumSamples text field is a number.
-      if( !isInteger( numSamplesText.getText() ) )
-      {
-         commentArea.append( "Number of samples invalid\n" );
-         return;
-      }
-      int readSamples = Integer.parseInt( numSamplesText.getText() );
-      if( readSamples <= 0 )
-      {
-         commentArea.append( "The Sample Size " + readSamples + " must be > 0\n" );
-         return;
-      }
-      prog.setNumSamples( readSamples );
-      commentArea.append( "Sample Size Changed to: " + prog.getNumSamples() + "\n" );
+	   int readSamples;
+	   String time;
+	   
+	   readSamples = (Integer)samplesSpinner.getModel().getValue();
+	   prog.setNumSamples( readSamples );
+	  
+	   if (prog.getNumSamples() == 1 )
+	   {
+		   time = "time"; 
+	   }
+	   else
+	   {
+		   time = "times";
+	   }
+	   commentArea.append( "Program will now sample " + prog.getNumSamples() + " " + time + "\n" );
+	   
    }
 
    public void updateGridX()
@@ -598,14 +608,22 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
 
       }
 
-      updateSamples();
-
       // Check if we have already sampled this cell location before.
       for( int cellCheck = 0; cellCheck < prog.getSamples().size(); cellCheck++ )
       {
          if( prog.getGridX() == prog.getSamples().get( cellCheck ).getLoc().x && prog.getGridY() == prog.getSamples().get( cellCheck ).getLoc().y )
          {
-            commentArea.append( "Repeating cell function not allowed\n" );
+            int option = JOptionPane.showConfirmDialog( this, "Cell has already been done, would you like to re-sample?",
+            			"Repeat Cell Confirmation", JOptionPane.YES_NO_OPTION );
+            if ( option == JOptionPane.YES_OPTION ) 
+            {
+            	//Redo the sampling for this cell
+            	prog.redoCellSample( prog.getGridX(), prog.getGridY() );
+            }
+            else 
+            {
+            	commentArea.append( "Repeating cell function not allowed\n" );
+            }
             return;
          }
       }
@@ -618,6 +636,9 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       {
     	  save.setEnabled(true);
       }
+      
+      commentArea.append( "Sample for location: (" + prog.getGridX() + "," + prog.getGridY() + ") is finished\n" );
+      
    }
 
    public void enableGUIFields( boolean enable )
@@ -633,7 +654,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener, 
       xGrid.setEnabled( enable );
       yGrid.setEnabled( enable );
 
-      /* No longer can change files we are using */
+      /* No longer can change access point file we are using */
       apFile.setEnabled( enable );
       //outFile.setEnabled( enable );
    }

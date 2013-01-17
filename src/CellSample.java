@@ -24,6 +24,16 @@ public class CellSample
    {
       return samples;
    }
+   
+   public boolean equals(Point testPoint) 
+   {
+	   if (testPoint.x == loc.x && testPoint.y == loc.y ) 
+	   {
+		   return true;
+	   }
+	   
+	   return false;
+   }
 
    private Point loc; // The xy location of the cell in the grid.
    private ArrayList< Sample > samples; // The list of samples for the current cell.
