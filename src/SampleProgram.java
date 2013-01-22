@@ -29,7 +29,6 @@ public class SampleProgram
       new LaptopFrame();
    }
 
-   
    /**
     * Initializes objects with default values.
     */
@@ -79,7 +78,6 @@ public class SampleProgram
          System.exit( 0 );
       }
 
-      
       // Create a new cell sample to add to the sample scanner.
       CellSample newCellSample = new CellSample();
       newCellSample.setLoc( gridx, gridy );
@@ -107,43 +105,43 @@ public class SampleProgram
     * Re-sample the cell specified by the grid locations
     * 
     * @param gridLocX
-    * 		x coordinate of cell
+    *           x coordinate of cell
     * @param gridLocY
-    * 		y coordinate of cell
+    *           y coordinate of cell
     */
    public void redoCellSample( int gridLocX, int gridLocY )
    {
-	   //Create new test point from grid locations
-	   Point tstPoint = new Point( gridLocX, gridLocY );
-	   
-	   for ( int i = 0; i < samples.size(); i++ ) 
-	   {
-		   if ( samples.get(i).getLoc().equals(tstPoint) ) 
-		   {
-			   //Points are equal to each other, so remove the sample set from the array list
-			   samples.get(i).getSamples().clear();
-			   
-			   // Run the scan and add to the sample set
-			   for ( int k = 0; k < numSamples; k++ )
-			   {
-				   	 Sample newSample = new Sample();
-				   	 
-				     // Set the output of the WiFi scanner to the new sample for this cell.
-			         newSample.setScan( wifiScanner.scan() );
+      //Create new test point from grid locations
+      Point tstPoint = new Point( gridLocX, gridLocY );
 
-			         // Map all AP BSSID to its unique ID from the AP table.
-			         apTable.mapAPsToID( newSample.getScan(), true );
+      for( int i = 0; i < samples.size(); i++ )
+      {
+         if( samples.get( i ).getLoc().equals( tstPoint ) )
+         {
+            //Points are equal to each other, so remove the sample set from the array list
+            samples.get( i ).getSamples().clear();
 
-			         // Add the newest sample to the latest cell.
-			         samples.get( i ).getSamples().add( newSample );
-			         
-			   }
-			   break;
-		   }
-	   }
-	   
+            // Run the scan and add to the sample set
+            for( int k = 0; k < numSamples; k++ )
+            {
+               Sample newSample = new Sample();
+
+               // Set the output of the WiFi scanner to the new sample for this cell.
+               newSample.setScan( wifiScanner.scan() );
+
+               // Map all AP BSSID to its unique ID from the AP table.
+               apTable.mapAPsToID( newSample.getScan(), true );
+
+               // Add the newest sample to the latest cell.
+               samples.get( i ).getSamples().add( newSample );
+
+            }
+            break;
+         }
+      }
+
    }
-   
+
    /**
     * Outputs the results of the scan to file.
     * 
@@ -175,13 +173,13 @@ public class SampleProgram
       sampleFileExt.writeToFile( "// GPS Coordinates:         " + "???" + "\n" );
       sampleFileExt.writeToFile( "// GIS Map Coordinates:     " + "???" + "\n" );
       sampleFileExt.writeToFile( "// Comment:                 " + fileComment + "\n" );
-      sampleFileExt.writeToFile( "// Direction:               " + direction + "\n");
+      sampleFileExt.writeToFile( "// Direction:               " + direction + "\n" );
       sampleFileExt.writeToFile( "//-------------------------------------------------------------------------------\n\n" );
-      
+
       String printString = new String();
-      
+
       // Write the max x/y coordinates and the number of access points at top of file.
-      printString = getGridSizeX() + "\n" + getGridSizeY() + "\n" + apTable.getAPTable().size() + "\n";
+      printString = ( getGridSizeX() + 1 ) + "\n" + ( getGridSizeY() + 1 ) + "\n" + apTable.getAPTable().size() + "\n";
       sampleFile.writeToFile( printString );
 
       for( int i = 0; i < samples.size(); i++ )
@@ -195,7 +193,7 @@ public class SampleProgram
          printArea.append( "###" + locx + "," + locy + "\n" );
          sampleFile.writeToFile( "###" + locx + "," + locy + "\n" );
          sampleFileExt.writeToFile( "###" + locx + "," + locy + "\n" );
-         
+
          // Write the current sample to the file.
          for( int j = 0; j < samples.get( i ).getSamples().size(); j++ )
          {
@@ -236,10 +234,12 @@ public class SampleProgram
 
             if( samples.get( i ).getSamples().get( j ).getScan().size() != apTable.getAPTable().size() )
             {
-               for( int k = 0; k < /*samples.get( i ).getSamples().get( j ).getScan().size()*/apTable.getAPTable().size(); k++ )
+               for( int k = 0; k < /*
+                                    * samples.get( i ).getSamples().get( j
+                                    * ).getScan().size()
+                                    */apTable.getAPTable().size(); k++ )
                {
-                  if( k > samples.get( i ).getSamples().get( j ).getScan().size() - 1
-                        || samples.get( i ).getSamples().get( j ).getScan().get( k ).getID() != k + 1 )
+                  if( k > samples.get( i ).getSamples().get( j ).getScan().size() - 1 || samples.get( i ).getSamples().get( j ).getScan().get( k ).getID() != k + 1 )
                   {
                      AccessPoint zeroAP = apTable.getAPTable().get( k );
                      zeroAP.setRSSI( 0 );
@@ -276,150 +276,169 @@ public class SampleProgram
     * 
     * @return grid size in x direction
     */
-   public int getGridSizeX() {
-	   return gridSizeX;
+   public int getGridSizeX()
+   {
+      return gridSizeX;
    }
-   
+
    /**
     * Setter method for grid size in x direction
     * 
-    * @param val Value to set gridSizeX to
+    * @param val
+    *           Value to set gridSizeX to
     */
-   public void setGridSizeX( int val ) {
-	   gridSizeX = val;
+   public void setGridSizeX( int val )
+   {
+      gridSizeX = val;
    }
-   
+
    /**
     * Setter method for grid size in y direction
     * 
-    * @param val Value to set gridSizeY to
+    * @param val
+    *           Value to set gridSizeY to
     */
-   public void setGridSizeY( int val ) {
-	   gridSizeY = val;
+   public void setGridSizeY( int val )
+   {
+      gridSizeY = val;
    }
-   
+
    /**
     * Accessor method for grid size in y direction
     * 
     * @return grid size in y direction
     */
-   public int getGridSizeY() {
-	   return gridSizeY;
+   public int getGridSizeY()
+   {
+      return gridSizeY;
    }
-   
+
    /**
     * Setter method for number of samples
     * 
-    * @param val Value to set numSamples to
+    * @param val
+    *           Value to set numSamples to
     */
-   public void setNumSamples( int val ) {
-	   numSamples = val;
+   public void setNumSamples( int val )
+   {
+      numSamples = val;
    }
-   
+
    /**
     * Accessor method for number of samples
     * 
     * @return desired number of samples
     */
-   public int getNumSamples() {
-	   return numSamples;
+   public int getNumSamples()
+   {
+      return numSamples;
    }
-   
+
    /**
     * Accessor method for grid location in x direction
     * 
     * @return grid location in x direction
     */
-   public int getGridX() {
-	   return gridx;
+   public int getGridX()
+   {
+      return gridx;
    }
-   
+
    /**
     * Setter method for grid location in x direction
     * 
-    * @param val 
-    * 		Value to set gridx to
+    * @param val
+    *           Value to set gridx to
     */
-   public void setGridX( int val ) {
-	   gridx = val;
+   public void setGridX( int val )
+   {
+      gridx = val;
    }
-   
+
    /**
     * Setter method for grid location in y direction
     * 
-    * @param val 
-    * 		Value to set gridy to
+    * @param val
+    *           Value to set gridy to
     */
-   public void setGridY( int val ) {
-	   gridy = val;
+   public void setGridY( int val )
+   {
+      gridy = val;
    }
-   
+
    /**
     * Accessor method for grid location in y direction
     * 
     * @return cell location in y direction
     */
-   public int getGridY() {
-	   return gridy;
+   public int getGridY()
+   {
+      return gridy;
    }
-   
+
    /**
     * Setter method for name of sample file
     * 
-    * @param val 
-    * 		Value to set sampleFileName to
+    * @param val
+    *           Value to set sampleFileName to
     */
-   public void setSampleFileName( String val ) {
-	   sampleFileName = val;
+   public void setSampleFileName( String val )
+   {
+      sampleFileName = val;
    }
-   
+
    /**
     * Accessor method for sample file name
     * 
     * @return name of sample file
     */
-   public String getSampleFileName() {
-	   return sampleFileName;
+   public String getSampleFileName()
+   {
+      return sampleFileName;
    }
-   
+
    /**
     * Setter method for name of access point table file
     * 
-    * @param val 
-    * 		Value to set access point file name to
+    * @param val
+    *           Value to set access point file name to
     */
-   public void setAPFileName( String val ) {
-	   apTableFileName = val;
+   public void setAPFileName( String val )
+   {
+      apTableFileName = val;
    }
-   
+
    /**
     * Accessor method for access point file name
     * 
     * @return name of access point table file
     */
-   public String getAPFileName() {
-	   return apTableFileName;
+   public String getAPFileName()
+   {
+      return apTableFileName;
    }
-   
+
    /**
     * Setter method for direction of sampling
     * 
-    * @param val 
-    * 		Value to set direction to
+    * @param val
+    *           Value to set direction to
     */
-   public void setDirection( String val ) {
-	   direction = val;
+   public void setDirection( String val )
+   {
+      direction = val;
    }
-   
+
    /**
     * Accessor method for direction of sampling
     * 
     * @return direction we are doing the sampling
     */
-   public String getDirection() {
-	   return direction;
+   public String getDirection()
+   {
+      return direction;
    }
-   
+
    private WriteFile sampleFile; // The raw data file that holds all of the generated samples for the current data set.
    private WriteFile sampleFileExt; // The extended data file with more information/comments about each sample and about the entire sample set.
 
@@ -431,26 +450,26 @@ public class SampleProgram
    private ArrayList< CellSample > samples; // The list of cells that are being sampled.
 
    private JTextArea printArea; // The console window where debug information can be print to.
-   
+
    /** Size of grid in the X direction */
    private int gridSizeX = 3;
 
    /** Size of grid in the Y direction */
    private int gridSizeY = 3;
-   
+
    /** The number of samples we need to do for the current position */
    private int numSamples = 20;
-   
+
    /** The current Cell Location in X direction */
    private int gridx = 1;
-   
+
    /** The current Cell Location in Y direction */
    private int gridy = 1;
-   
+
    /** name of the output file we write to */
    private String sampleFileName;
-   
+
    /** the direction faced while sampling is done */
    private String direction;
-   
+
 }
