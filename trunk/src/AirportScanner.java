@@ -18,7 +18,7 @@ public class AirportScanner extends WifiScanner
    public AirportScanner()
    {
       // Create a list of access points found during this scan.
-      apList = new ArrayList< AccessPoint >();
+      ///apList = new ArrayList< AccessPoint >();
    }
 
    /**
@@ -31,9 +31,6 @@ public class AirportScanner extends WifiScanner
       StreamReader scanOutputReader;
       StreamReader noiseOutputReader; // The output of the "airport -I" command which will give us the noise value.
       System.out.println( "Running the airport scanner..." );
-
-      // Clear the previous list so we can start fresh.
-      apList.clear();
 
       try
       {
@@ -74,12 +71,14 @@ public class AirportScanner extends WifiScanner
          return null;
       }
 
+      // Create a new list so we can start with new RSSI data.
+      apList = new ArrayList< AccessPoint >();
+
       // Parse the returned string buffer so we can determine the AP information including the RSSI.
       parseAirportStr( scanOutputReader.getOutputStr(), noiseOutputReader.getOutputStr() );
 
       // Return the complete list of access points that were scanned.
       return apList;
-
    }
 
    /**
