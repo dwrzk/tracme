@@ -40,6 +40,24 @@ public class LocalizationProgram
 
       wifiScanner = new AirportScanner();
       wifiScanner.scan();
+      
+      
+      
+      /*
+      String nameOfRawFile; // e.g., "brunato_data.txt" (raw file must be located in the same folder with MainTesting.java
+      String nameOfTrainFile;  // e.g., "train_p0.5.txt" 
+      
+      int nX = 6; // number of classes along the x dimension; 
+      int nY = 6; // number of classes along the y dimension
+      
+      //e.g., if map is a grid of gridX x gridY = 11 x 15, then nX = gridX - 1 = 10, nY = gridY -1 = 14
+            
+            
+      Testing test = new Testing(nameOfRawFile, nameOfTrainFile);
+      test.setNumClasses(nX, nY);
+      
+      double[] newSample; // a new sample reading 
+      double[] location = getEstLocation(newSample); // estimated location for newSample*/
    }
 
    private TrainingModel trainingModel;

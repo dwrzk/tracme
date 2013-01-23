@@ -85,7 +85,7 @@ public class APTable
                // Set the ID of the mapped AP in the list.
                apList.get( i ).setID( aps.get( j ).getID() );
                System.out.println( "Value mapped with id " + apList.get( i ).getID() + " and BSSID "
-                     + apList.get( i ).getBSSID() );
+                     + apList.get( i ).getBSSID() + " and RSSI " + apList.get( i ).getRSSI() );
                break;
             }
          }
