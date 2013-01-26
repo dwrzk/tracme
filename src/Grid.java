@@ -9,7 +9,7 @@ import javax.swing.Timer;
  * 
  * @author James Humphrey
  */
-public class Grid extends JFrame // /implements ActionListener, ChangeListener
+public class Grid extends JFrame
 {
 
     /**
@@ -18,12 +18,25 @@ public class Grid extends JFrame // /implements ActionListener, ChangeListener
      * 
      * @author James Humphrey
      */
-    public class Cell
+    public class Cell implements ActionListener
     {
-        public Cell()
+        /**
+         * Initialize a default cell object.
+         * 
+         * @param x
+         *            The X location of the cell.
+         * @param y
+         *            The Y location of the cell.
+         */
+        public Cell( int x, int y )
         {
             shaded = false;
-            blink = false;
+
+            this.x = x;
+            this.y = y;
+
+            shaded = false;
+            delay = 0;
         }
 
         public boolean isShaded()
@@ -36,52 +49,48 @@ public class Grid extends JFrame // /implements ActionListener, ChangeListener
             shaded = shade;
         }
 
-        public boolean isBlinking()
+        public void actionPerformed( ActionEvent evt )
         {
-            return blink;
+            // Reverse the polarity of turning on/off the shading function.
+            shaded = !shaded;
+
+            // We need to repaint to add/remove the square.
+            repaint();
         }
 
-        public void setBlink( boolean blink )
+        public void setBlinking()
         {
-            this.blink = blink;
-        }
-
-        private boolean shaded; // Indicates if this cell needs to be shaded in.
-        private boolean blink; // Indicates if this cell should be blinking
-                               // because it is an active cell.
-    }
-
-    private class BlinkingCell implements ActionListener
-    {
-        public BlinkingCell( int x, int y )
-        {
-            this.x = x;
-            this.y = y;
-
-            shadeOn = true;
-            delay = 1000;
+            shaded = true;
+            delay = 500;
 
             blinkTimer = new Timer( delay, this );
             blinkTimer.start();
-
         }
 
-        public void actionPerformed( ActionEvent evt )
+        public void stopBlinking()
         {
-            shadeOn = !shadeOn;
+            blinkTimer.stop();
+            blinkTimer = null;
         }
 
-        private Timer blinkTimer;
-        private int delay;
-        private boolean shadeOn; // Indicates whether the shading is currently
-                                 // on or
-        // off.
+        private boolean shaded; // Indicates if this cell needs to be shaded in.
+
+        private Timer blinkTimer; //
+        private int delay; // The delay to use for switching between blinking
+                           // states.
+
         private int x, y;
-
-        // private static final int BLINK_DELAY = 1000;
-
     }
 
+    /**
+     * Create a new grid with the specified number of cells in the x and y
+     * direction.
+     * 
+     * @param x
+     *            The number of columns in the grid.
+     * @param y
+     *            The number of rows in the grid.
+     */
     public Grid( int x, int y )
     {
         super( "Grid" );
@@ -113,21 +122,26 @@ public class Grid extends JFrame // /implements ActionListener, ChangeListener
         {
             for( int j = 0; j < x; j++ )
             {
-                cells[i][j] = new Cell();
+                cells[i][j] = new Cell( j, i );
             }
         }
 
         columns = x;
         rows = y;
         cellLength = 50;
-        blinkCell = null;
     }
 
+    /**
+     * Called every time the frame panel needs to be painted. This draws the
+     * rows and columns of the grid and any shaded cells that are designated.
+     */
     public void paint( Graphics g )
     {
         // /super.paintComponents( g );
 
         Graphics2D graphics = (Graphics2D) mainPanel.getGraphics();
+
+        g.clearRect( 0, 0, getWidth(), getHeight() );
 
         // Draw the vertical lines for the grid.
         for( int i = 0; i < ( columns + 1 ) * cellLength; i += cellLength )
@@ -142,53 +156,78 @@ public class Grid extends JFrame // /implements ActionListener, ChangeListener
         }
 
         // Shade any cells that are marked as shaded.
-        graphics.setColor( Color.blue );
+
         for( int i = 0; i < getNumRows(); i++ )
         {
             for( int j = 0; j < getNumColumns(); j++ )
             {
                 if( cells[i][j].isShaded() )
                 {
+                    graphics.setColor( Color.blue );
                     // Draw the rectangle( topleftX, topleftY, width, height ).
                     graphics.fillRect( j * cellLength, i * cellLength,
                             cellLength, cellLength );
                 }
+
+                // Draw the text indicating the cell location.
+                graphics.setColor( Color.black );
+                graphics.drawString( "(" + ( j + 1 ) + ","
+                        + ( 0 - ( ( i + 1 ) - ( rows + 1 ) ) ) + ")",
+                        cellLength * j + cellLength / 4, cellLength * i
+                                + cellLength / 2 );
             }
         }
 
     }
 
+    /**
+     * Gets the number of rows in the grid.
+     * 
+     * @return The number of rows (y direction) in the grid.
+     */
     public int getNumRows()
     {
         return cells.length;
     }
 
+    /**
+     * Gets the number of columns in the grid.
+     * 
+     * @return The number of columns (x direction) in the grid.
+     */
     public int getNumColumns()
     {
         return cells[0].length;
     }
 
-    public Cell getCell( int row, int col )
+    public Cell getCell( int x, int y )
     {
-        if( row + 1 > getNumRows() || col + 1 > getNumColumns() )
+        int arrayX = convertCoordToArrayX( x );
+        int arrayY = convertCoordToArrayY( y );
+        if( arrayY + 1 > getNumRows() || arrayX + 1 > getNumColumns() )
         {
-            System.out.println( "Cell row/column out of bounds (" + row + ", "
-                    + col + ")" );
+            System.out.println( "Cell row/column out of bounds (" + arrayX
+                    + ", " + arrayY + ")" );
             return null;
         }
 
-        return cells[row][col];
+        System.out.println( "Debug " + arrayX + " " + arrayY );
+
+        return cells[arrayY][arrayX];
     }
 
-    public void setBlinkingCell( int x, int y )
+    /**
+     * Disable any blinking cells.
+     */
+    public void clearBlinkingCells()
     {
-        blinkCell = new BlinkingCell( convertCoordToArrayX( x ),
-                convertCoordToArrayY( y ) );
-    }
-
-    public void clearBlinkingCell()
-    {
-        blinkCell = null;
+        for( int i = 0; i < rows; i++ )
+        {
+            for( int j = 0; j < columns; j++ )
+            {
+                cells[i][j].stopBlinking();
+            }
+        }
     }
 
     /**
@@ -221,8 +260,6 @@ public class Grid extends JFrame // /implements ActionListener, ChangeListener
     private int rows;
     private int cellLength; // The length of each cell (in pixels) that gets
                             // drawn.
-
-    private BlinkingCell blinkCell;
 
     private static final long serialVersionUID = 42L;
 }
