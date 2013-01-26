@@ -360,7 +360,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         save.setEnabled( false );
         
         grid = new Grid( prog.getGridSizeX(), prog.getGridSizeY() );
-        grid.getCell( 0, 0 ).setShaded( true );
 
         return;
 
@@ -450,6 +449,8 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
 
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
+        
+        //grid.getCell( prog.getGridX(), prog.getGridY() ).setBlinking();
 
     }
 
@@ -462,7 +463,8 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
 
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
-
+        
+        //grid.getCell( prog.getGridX(), prog.getGridY() ).setBlinking();
     }
 
     public void actionPerformed( ActionEvent evt )
