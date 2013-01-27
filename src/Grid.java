@@ -139,7 +139,7 @@ public class Grid extends JFrame
     {
         // /super.paintComponents( g );
 
-        Graphics2D graphics = (Graphics2D) mainPanel.getGraphics();
+        Graphics2D graphics = (Graphics2D)mainPanel.getGraphics();
 
         g.clearRect( 0, 0, getWidth(), getHeight() );
 
