@@ -121,7 +121,7 @@ public class AccessPoint
     * @param ht
     *           The received HT value to set
     */
-   public void setHT( boolean ht )
+   public void setHT( String ht )
    {
       this.ht = ht;
    }
@@ -131,7 +131,7 @@ public class AccessPoint
     * 
     * @return The HT value for this access point
     */
-   public boolean getHT()
+   public String getHT()
    {
       return ht;
    }
@@ -192,7 +192,7 @@ public class AccessPoint
    private String bssid; // BSSID (Basic Service Set Identification) is an ideally unique number for each access point. We will use this value to identify the different APs.
    private int rssi; // RSSI (Received Signal Strength Indication) is the signal measurement of power in dB.
    private String channel; // The range of frequencies in use.
-   private boolean ht; // Indicates if this AP supports a home theater receiver.
+   private String ht; // Indicates if this AP supports a home theater receiver.
    private String cc; // CC (Country Code) can be used to identify the country the AP is located in.
    private String security; // Indicates the type of security used by the AP and its (auth/unicast/group).
    ///private coord loc; // Physical location of the AP.

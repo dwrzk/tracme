@@ -170,7 +170,7 @@ public class AirportScanner extends WifiScanner
             ap.setBSSID( bssid );
             ap.setRSSI( RSSI_MAX + lineScan.nextInt() );
             ap.setChannel( lineScan.next() );
-            ap.setHT( lineScan.next().equals( "Y" ) ? true : false );
+            ap.setHT( lineScan.next().equals( "Y" ) ? "true" : "false" );
             ap.setCC( lineScan.next() );
             ap.setSecurity( lineScan.next() );
 
