@@ -11,7 +11,6 @@ import javax.swing.Timer;
  */
 public class Grid extends JFrame
 {
-
     /**
      * Represents a cell that is located within the grid. Can be set to shaded
      * or blinking mode to signify importance.
@@ -36,50 +35,114 @@ public class Grid extends JFrame
             this.y = y;
 
             shaded = false;
+            blinkTimer = null;
             delay = 0;
+
+            needsPaintUpdate = true;
         }
 
+        /**
+         * Determines if the cell is currently in a shaded state.
+         * 
+         * @return true if the cell is shaded.
+         */
         public boolean isShaded()
         {
             return shaded;
         }
 
+        /**
+         * Sets the cell's shade mode.
+         * 
+         * @param shade
+         *            true if the cell should be shaded, false otherwise.
+         */
         public void setShaded( boolean shade )
         {
             shaded = shade;
+
+            needsPaintUpdate = true;
         }
 
+        /**
+         * Called every time the blinker timer goes off, indicating a switch in
+         * the blinking state.
+         */
         public void actionPerformed( ActionEvent evt )
         {
             // Reverse the polarity of turning on/off the shading function.
             shaded = !shaded;
 
+            needsPaintUpdate = true;
+
             // We need to repaint to add/remove the square.
             repaint();
         }
 
+        /**
+         * Turns on blinking for the current cell.
+         */
         public void setBlinking()
         {
             shaded = true;
-            delay = 500;
+            delay = 300;
+            needsPaintUpdate = true;
 
             blinkTimer = new Timer( delay, this );
             blinkTimer.start();
         }
 
+        /**
+         * Stops the blinking timer which prevents the cell from flashing color
+         * for attention.
+         */
         public void stopBlinking()
         {
-            blinkTimer.stop();
-            blinkTimer = null;
+            if( blinkTimer != null )
+            {
+                blinkTimer.stop();
+                blinkTimer = null;
+            }
+
+            shaded = false;
+
+            needsPaintUpdate = true;
         }
 
-        private boolean shaded; // Indicates if this cell needs to be shaded in.
+        /**
+         * Determines if the cell needs to be painted because of a recent
+         * update.
+         * 
+         * @return true if the cell should be repainted.
+         */
+        public boolean needsPaintUpdate()
+        {
+            return needsPaintUpdate;
+        }
 
-        private Timer blinkTimer; //
-        private int delay; // The delay to use for switching between blinking
-                           // states.
+        /**
+         * Indicates that the cell has just been painted and no further painting
+         * is required until the next update.
+         */
+        public void setPaintWasUpdated()
+        {
+            needsPaintUpdate = false;
+        }
 
+        /** Indicates if this cell needs to be shaded in. */
+        private boolean shaded;
+
+        /** Timer used for alternating the blink cycle in this cell. */
+        private Timer blinkTimer;
+
+        /** The delay to use for switching between blinking states. */
+        private int delay;
+
+        /** The x/y coordinates of the cell in the grid. */
         private int x, y;
+
+        /** Indicates if we need to repaint this cell. */
+        private boolean needsPaintUpdate;
     }
 
     /**
@@ -95,13 +158,6 @@ public class Grid extends JFrame
     {
         super( "Grid" );
 
-        // Make sure we have a valid grid range.
-        if( x <= 0 || y <= 0 )
-        {
-            System.out.println( "x and y must both be greater than 0" );
-            this.dispose();
-        }
-
         mainPanel = new JPanel();
         mainPanel.setLayout( null );
         mainPanel.setLocation( 0, 0 );
@@ -109,26 +165,16 @@ public class Grid extends JFrame
         add( mainPanel );
 
         // setBounds(100,100,300,100);
+        setLocation( 800, 50 );
         setSize( 800, 700 );
-        // setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+        // setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
         // Container con = this.getContentPane();
         setLayout( null );
         setVisible( true );
 
         setResizable( true );
 
-        cells = new Cell[y][x];
-        for( int i = 0; i < y; i++ )
-        {
-            for( int j = 0; j < x; j++ )
-            {
-                cells[i][j] = new Cell( j, i );
-            }
-        }
-
-        columns = x;
-        rows = y;
-        cellLength = 50;
+        setGrid( x, y );
     }
 
     /**
@@ -146,38 +192,47 @@ public class Grid extends JFrame
         // Draw the vertical lines for the grid.
         for( int i = 0; i < ( columns + 1 ) * cellLength; i += cellLength )
         {
-            graphics.drawLine( i, 0, i, columns * cellLength );
+            graphics.drawLine( i, 0, i, rows * cellLength );
         }
 
         // Draw the horizontal lines for the grid.
         for( int j = 0; j < ( rows + 1 ) * cellLength; j += cellLength )
         {
-            graphics.drawLine( 0, j, rows * cellLength, j );
+            graphics.drawLine( 0, j, columns * cellLength, j );
         }
 
         // Shade any cells that are marked as shaded.
-
+        graphics.setFont( new Font( null, Font.BOLD, 14 ) );
         for( int i = 0; i < getNumRows(); i++ )
         {
             for( int j = 0; j < getNumColumns(); j++ )
             {
-                if( cells[i][j].isShaded() )
+                // We only need to repaint cells that were recently updated.
+                if( cells[i][j].needsPaintUpdate() )
                 {
-                    graphics.setColor( Color.blue );
-                    // Draw the rectangle( topleftX, topleftY, width, height ).
-                    graphics.fillRect( j * cellLength, i * cellLength,
-                            cellLength, cellLength );
-                }
+                    if( cells[i][j].isShaded() )
+                    {
+                        graphics.setColor( Color.blue );
+                        // Draw the rectangle(topleftX,topleftY,width,height).
+                        graphics.fillRect( j * cellLength, i * cellLength,
+                                cellLength, cellLength );
+                    }
 
-                // Draw the text indicating the cell location.
-                graphics.setColor( Color.black );
-                graphics.drawString( "(" + ( j + 1 ) + ","
-                        + ( 0 - ( ( i + 1 ) - ( rows + 1 ) ) ) + ")",
-                        cellLength * j + cellLength / 4, cellLength * i
-                                + cellLength / 2 );
+                    // Draw the text indicating the cell location.
+                    graphics.setColor( Color.black );
+                    graphics.drawString( "(" + ( j + 1 ) + ","
+                            + ( 0 - ( ( i + 1 ) - ( rows + 1 ) ) ) + ")",
+                            cellLength * j + cellLength / 6, cellLength * i
+                                    + cellLength / 2 );
+
+                    // Indicate to the cell that we just repainted it.
+                    //cells[i][j].setPaintWasUpdated();
+                }
             }
         }
 
+        // Draw the direction vector (N,E,S,W).
+        // graphics.drawString( "", x, y );
     }
 
     /**
@@ -200,6 +255,15 @@ public class Grid extends JFrame
         return cells[0].length;
     }
 
+    /**
+     * Gets the cell at the specified location in the grid.
+     * 
+     * @param x
+     *            The x coordinate of the cell in the grid.
+     * @param y
+     *            The y coordinate of the cell in the grid.
+     * @return the cell object that is contained within the grid.
+     */
     public Cell getCell( int x, int y )
     {
         int arrayX = convertCoordToArrayX( x );
@@ -211,13 +275,11 @@ public class Grid extends JFrame
             return null;
         }
 
-        System.out.println( "Debug " + arrayX + " " + arrayY );
-
         return cells[arrayY][arrayX];
     }
 
     /**
-     * Disable any blinking cells.
+     * Disable all blinking cells.
      */
     public void clearBlinkingCells()
     {
@@ -254,12 +316,80 @@ public class Grid extends JFrame
         return y - 1 + rows - 1;
     }
 
-    private JPanel mainPanel;
-    private Cell[][] cells;
-    private int columns;
-    private int rows;
-    private int cellLength; // The length of each cell (in pixels) that gets
-                            // drawn.
+    /**
+     * Initializes the grid to be the size indicated by the parameters.
+     * 
+     * @param x
+     *            The number of columns in the grid.
+     * @param y
+     *            The number of rows in the grid.
+     */
+    public void setGrid( int x, int y )
+    {
+        // Make sure we have a valid grid range.
+        if( x <= 0 || y <= 0 )
+        {
+            System.out.println( "x and y must both be greater than 0" );
+            return;
+        }
 
+        cells = new Cell[y][x];
+        for( int i = 0; i < y; i++ )
+        {
+            for( int j = 0; j < x; j++ )
+            {
+                cells[i][j] = new Cell( j, i );
+            }
+        }
+
+        columns = x;
+        rows = y;
+        cellLength = 50;
+        oneBlink = true;
+
+        repaint();
+    }
+
+    /**
+     * Sets the specified cell to a blinking state mode. It will automatically
+     * clear all other blinking cells if only one cell is allowed to blink at a
+     * time.
+     * 
+     * @param x
+     *            The x coordinate of the cell in the grid.
+     * @param y
+     *            The y coordinate of the cell in the grid.
+     */
+    public void setBlinking( int x, int y )
+    {
+        if( oneBlink )
+        {
+            clearBlinkingCells();
+        }
+        getCell( x, y ).setBlinking();
+    }
+
+    /** The main panel where all of the graphics drawing will take place. */
+    private JPanel mainPanel;
+
+    /** A double array of all the cells in the grid. */
+    private Cell[][] cells;
+
+    /** The number of columns in the grid (x values). */
+    private int columns;
+
+    /** The number of rows in the grid (y values). */
+    private int rows;
+
+    /** The length of each cell (in pixels) that gets drawn. */
+    private int cellLength;
+
+    /** Indicates if only one cell can blink at a time. */
+    private boolean oneBlink;
+
+    /**
+     * The class version number used during deserialization to verify that the
+     * loaded class is compatible with serialization
+     */
     private static final long serialVersionUID = 42L;
 }

@@ -111,8 +111,6 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         setVisible( true );
 
         setResizable( false );
-
-        grid = null;
     }
 
     /* Methods */
@@ -358,8 +356,10 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         // Disable the save button until the correct amount of samples have been
         // done
         save.setEnabled( false );
-        
+
+        // Create the grid and set the blinking state for the first cell.
         grid = new Grid( prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
 
         return;
 
@@ -444,13 +444,13 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
     {
         int readXLoc;
 
-        readXLoc = (Integer) xSpinner.getModel().getValue();
+        readXLoc = (Integer)xSpinner.getModel().getValue();
         prog.setGridX( readXLoc );
 
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
-        
-        //grid.getCell( prog.getGridX(), prog.getGridY() ).setBlinking();
+
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
 
     }
 
@@ -458,13 +458,13 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
     {
         int readYLoc;
 
-        readYLoc = (Integer) ySpinner.getModel().getValue();
+        readYLoc = (Integer)ySpinner.getModel().getValue();
         prog.setGridY( readYLoc );
 
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
-        
-        //grid.getCell( prog.getGridX(), prog.getGridY() ).setBlinking();
+
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
     }
 
     public void actionPerformed( ActionEvent evt )
@@ -576,7 +576,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         int readSamples;
         String time;
 
-        readSamples = (Integer) samplesSpinner.getModel().getValue();
+        readSamples = (Integer)samplesSpinner.getModel().getValue();
         prog.setNumSamples( readSamples );
 
         if( prog.getNumSamples() == 1 )
@@ -594,29 +594,27 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
 
     public void updateGridX()
     {
-        prog.setGridSizeX( (Integer) xGrid.getSelectedItem() );
+        prog.setGridSizeX( (Integer)xGrid.getSelectedItem() );
         commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX()
                 + "x" + prog.getGridSizeY() + "\n" );
 
         doAction = false;
-        ( (SpinnerNumberModel) xSpinner.getModel() ).setMaximum( (Integer) prog
+        ( (SpinnerNumberModel)xSpinner.getModel() ).setMaximum( (Integer)prog
                 .getGridSizeX() );
-        
-        ///grid.dispose();
-        grid = new Grid( prog.getGridSizeX(), prog.getGridSizeY() );
+
+        grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
     }
 
     public void updateGridY()
     {
-        prog.setGridSizeY( (Integer) yGrid.getSelectedItem() );
+        prog.setGridSizeY( (Integer)yGrid.getSelectedItem() );
         commentArea.append( "Updated Grid Size to : " + prog.getGridSizeX()
                 + "x" + prog.getGridSizeY() + "\n" );
         doAction = false;
-        ( (SpinnerNumberModel) ySpinner.getModel() ).setMaximum( (Integer) prog
+        ( (SpinnerNumberModel)ySpinner.getModel() ).setMaximum( (Integer)prog
                 .getGridSizeY() );
-        
-        ///grid.dispose();
-        grid = new Grid( prog.getGridSizeX(), prog.getGridSizeY() );
+
+        grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
     }
 
     public void runEvent()
@@ -667,17 +665,20 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         commentArea.append( "Number of samples done: "
                 + prog.getSamples().size() + "\n" );
         commentArea.append( "Number of samples needed: "
-                + ( (Integer) xGrid.getSelectedItem() * (Integer) yGrid
+                + ( (Integer)xGrid.getSelectedItem() * (Integer)yGrid
                         .getSelectedItem() ) + "\n" );
         // Check if correct amount of samples have been done
-        if( prog.getSamples().size() == (Integer) xGrid.getSelectedItem()
-                * (Integer) yGrid.getSelectedItem() )
+        if( prog.getSamples().size() == (Integer)xGrid.getSelectedItem()
+                * (Integer)yGrid.getSelectedItem() )
         {
             save.setEnabled( true );
         }
 
         commentArea.append( "Sample for location: (" + prog.getGridX() + ","
                 + prog.getGridY() + ") is finished\n" );
+        
+        // Shade that cell to indicate that we already sampled there.
+        grid.getCell( prog.getGridX(), prog.getGridY() ).setShaded( true );
 
     }
 
