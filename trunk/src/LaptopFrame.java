@@ -450,7 +450,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
 
-        grid.setBlinking( prog.getGridX(), prog.getGridY() );
+        //grid.setBlinking( prog.getGridX(), prog.getGridY() );
 
     }
 
