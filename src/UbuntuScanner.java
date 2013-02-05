@@ -3,6 +3,12 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+/**
+ * A wireless interface scanner that was tested on Ubuntu. Should also work on
+ * other Linux-based systems with iwlist functionality.
+ * 
+ * @author James Humphrey
+ */
 public class UbuntuScanner extends WifiScanner
 {
 
@@ -25,69 +31,49 @@ public class UbuntuScanner extends WifiScanner
      */
     public void enumerateWirelessInterfaces()
     {
-        StreamReader scanOutputReader;
 
         System.out.println( "Running the ip link enumerator..." );
 
-        try
+        ProcessOutputReader por = new ProcessOutputReader();
+        String strOut = por.runProgram( "ip link" );
+
+        if( !strOut.isEmpty() )
         {
-            // Get the current runtime and execute the iwlist scanner
-            // processes.
-            Runtime rt = Runtime.getRuntime();
-            Process scanProc = rt.exec( "ip link" );
+            Scanner sc = new Scanner( strOut );
+            ArrayList<String> interfaces = new ArrayList<String>();
+            while( sc.hasNext() )
+            {
+                // The interface name is the 2nd string in the list.
+                sc.next();
+                String newInt = sc.next();
+                newInt = newInt.trim();
+                newInt = newInt.substring( 0, newInt.length() - 1 );
+                interfaces.add( newInt );
 
-            // Read the output produced by the iwlist scanner.
-            scanOutputReader = new StreamReader( scanProc.getInputStream() );
+                // Move to the next interface.
+                sc.nextLine();
+                sc.nextLine();
+            }
 
-            // Start the output thread.
-            scanOutputReader.start();
+            scanInterface = "";
+            System.out.println( "Found the following network interfaces -" );
+            for( int i = 0; i < interfaces.size(); i++ )
+            {
+                System.out.println( ( i + 1 ) + ": " + interfaces.get( i ) );
 
-            // Tell the main thread to wait for the thread to finish before
-            // continuing on with the analysis.
-            scanOutputReader.join();
-
-            // Check if the airport scanner encountered any errors.
-            int scanExitVal = scanProc.waitFor();
-            System.out.println( "\"iwlist scan\" Exit Value: " + scanExitVal );
-
+                // Always use the first wireless interface in the list.
+                if( scanInterface.equals( "" )
+                        && interfaces.get( i ).contains( "wlan" ) )
+                {
+                    scanInterface = interfaces.get( i );
+                }
+            }
         }
-        catch( Throwable t )
+        else
         {
             System.out
-                    .println( "Failed to get the list of interfaces, setting to default wlan0" );
-            t.printStackTrace();
-            scanInterface = "wlan0"; // TODO: Move to separate class.
-            return;
-        }
-
-        Scanner sc = new Scanner( scanOutputReader.getOutputStr() );
-        ArrayList<String> interfaces = new ArrayList<String>();
-        while( sc.hasNext() )
-        {
-            // The interface name is the 2nd string in the list.
-            sc.next();
-            String newInt = sc.next();
-            newInt = newInt.trim();
-            newInt = newInt.substring( 0, newInt.length() - 1 );
-            interfaces.add( newInt );
-
-            // Move to the next interface.
-            sc.nextLine();
-            sc.nextLine();
-        }
-
-        scanInterface = "";
-        System.out.println( "Found the following network interfaces -" );
-        for( int i = 0; i < interfaces.size(); i++ )
-        {
-            System.out.println( (i+1) + ": " + interfaces.get( i ) );
-
-            // Always use the first wireless interface in the list.
-            if( scanInterface.equals( "" )
-                    && interfaces.get( i ).contains( "wlan" ) )
-            {
-                scanInterface = interfaces.get( i );
-            }
+                    .println( "Unable to determine wireless interfaces, defaulting to wlan0" );
+            scanInterface = "wlan0";
         }
 
         // Select the first network interface that is a wlan.
@@ -100,48 +86,21 @@ public class UbuntuScanner extends WifiScanner
      */
     public ArrayList<AccessPoint> scan()
     {
-        StreamReader scanOutputReader;
-
         System.out.println( "Running the iwlist scanner..." );
-
-        try
+        ProcessOutputReader por = new ProcessOutputReader();
+        String strOut = por.runProgram( "sudo iwlist " + scanInterface
+                + " scanning" );
+        if( strOut.isEmpty() )
         {
-            // Get the current runtime and execute the iwlist scanner
-            // processes.
-            Runtime rt = Runtime.getRuntime();
-            Process scanProc = rt.exec( "sudo iwlist " + scanInterface
-                    + " scanning" );
-
-            // Read the output produced by the iwlist scanner.
-            scanOutputReader = new StreamReader( scanProc.getInputStream() );
-
-            // Start the output thread.
-            scanOutputReader.start();
-
-            // Tell the main thread to wait for the thread to finish before
-            // continuing on with the analysis.
-            scanOutputReader.join();
-
-            // Check if the airport scanner encountered any errors.
-            int scanExitVal = scanProc.waitFor();
-            System.out.println( "\"iwlist scan\" Exit Value: " + scanExitVal );
-
-        }
-        catch( Throwable t )
-        {
-            System.out.println( "Failed to execute iwlist command" );
-            t.printStackTrace();
             return null;
         }
 
         // Create a new list so we can start with new RSSI data.
         apList = new ArrayList<AccessPoint>();
 
-        // System.out.println( scanOutputReader.getOutputStr() );
-
         // Parse the returned string buffer so we can determine the AP
         // information including the RSSI.
-        parseIwlistStr( scanOutputReader.getOutputStr() );
+        parseIwlistStr( strOut );
 
         // Return the complete list of access points that were scanned.
         return apList;

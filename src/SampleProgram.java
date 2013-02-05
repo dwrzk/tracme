@@ -97,6 +97,14 @@ public class SampleProgram
 
             // Add the newest sample to the latest cell.
             samples.get( samples.size() - 1 ).getSamples().add( newSample );
+            
+            try{
+            Thread.sleep(100);
+            }
+            catch(Exception e)
+            {
+                System.out.println("Failed to sleep");
+            }
         }
 
     }
