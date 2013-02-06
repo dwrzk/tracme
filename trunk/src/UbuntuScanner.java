@@ -218,12 +218,6 @@ public class UbuntuScanner extends WifiScanner
         sc.close();
     }
 
-    /**
-     * The maximum RSSI value for the iwlist scanner, which is used for
-     * calculating the signal strength.
-     */
-    private static final int RSSI_MAX = 100;
-
     private static final Pattern intPattern = Pattern.compile( "(\\d+)" );
 
     private String scanInterface = "";

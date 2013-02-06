@@ -6,9 +6,17 @@ import java.util.ArrayList;
  * implement the required functionality.
  * 
  * @author James Humphrey
+ * @author Kwaku Farkye
+ * 
  */
 public abstract class WifiScanner
 {
+	/**
+     * The maximum RSSI value for the iwlist scanner, which is used for
+     * calculating the signal strength.
+     */
+    protected static final int RSSI_MAX = 100;
+	
    /**
     * The implemented scan function will search for all available access points
     * and gather a minimum information of BSSID and RSSI values and return an

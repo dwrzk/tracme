@@ -69,8 +69,15 @@ public class SampleProgram
             // Create the airport scanner for Ubuntu.
             wifiScanner = new UbuntuScanner();
         }
+        else if ( osName.indexOf("Win") >= 0 )
+        {
+        	wifiScanner = new WindowsScanner();
+        	System.out.println("Windows Operating System");
+        	//System.exit(0);
+        }
         else
         {
+        	//wifiScanner = new WindowsScanner();
             // An invalid operating system was detected.
             System.out.println( "Unsupported operating system" );
             System.exit( 0 );
