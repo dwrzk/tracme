@@ -2,7 +2,7 @@
  * The following excerpt is taken from guide.pdf on the libsvm site which
  * explains the general use of and reason for this class:
  * 
- * "Scaling before applying SVM is very important. Part 2 of Sarle’s Neural
+ * "Scaling before applying SVM is very important. Part 2 of Sarles Neural
  * Networks FAQ Sarle (1997) explains the importance of this and most of
  * considerations also apply to SVM. The main advantage of scaling is to avoid
  * attributes in greater numeric ranges dominating those in smaller numeric
