@@ -48,7 +48,8 @@ public class WindowsScanner extends WifiScanner
 	  **/
 	   
 	   ProcessOutputReader por = new ProcessOutputReader();
-       String strOut = por.runProgram( "C:\\Users\\Kwaku\\Documents\\Visual Studio 2012\\Projects\\WinScan\\Debug\\WinScan.exe" );
+       String strOut = por.runProgram("WinScan.exe");
+    		   //( "C:\\Users\\Kwaku\\Documents\\Visual Studio 2012\\Projects\\WinScan\\Debug\\WinScan.exe" );
        if( strOut.isEmpty() )
        {
            return null;
