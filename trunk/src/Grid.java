@@ -29,12 +29,11 @@ public class Grid extends JFrame
          */
         public Cell( int x, int y )
         {
-            shaded = false;
-
             this.x = x;
             this.y = y;
 
             shaded = false;
+            permanentShade = false;
             blinkTimer = null;
             delay = 0;
 
@@ -46,9 +45,14 @@ public class Grid extends JFrame
          * 
          * @return true if the cell is shaded.
          */
-        public boolean isShaded()
+        public boolean isBlinkingShaded()
         {
             return shaded;
+        }
+
+        public boolean isShaded()
+        {
+            return permanentShade;
         }
 
         /**
@@ -59,7 +63,7 @@ public class Grid extends JFrame
          */
         public void setShaded( boolean shade )
         {
-            shaded = shade;
+            permanentShade = shade;
 
             needsPaintUpdate = true;
         }
@@ -132,6 +136,9 @@ public class Grid extends JFrame
         /** Indicates if this cell needs to be shaded in. */
         private boolean shaded;
 
+        /** Indicates if this cell should be permanently shaded. */
+        private boolean permanentShade;
+
         /** Timer used for alternating the blink cycle in this cell. */
         private Timer blinkTimer;
 
@@ -183,11 +190,7 @@ public class Grid extends JFrame
      */
     public void paint( Graphics g )
     {
-        // /super.paintComponents( g );
-
         Graphics2D graphics = (Graphics2D)mainPanel.getGraphics();
-
-        g.clearRect( 0, 0, getWidth(), getHeight() );
 
         // Draw the vertical lines for the grid.
         for( int i = 0; i < ( columns + 1 ) * cellLength; i += cellLength )
@@ -210,12 +213,25 @@ public class Grid extends JFrame
                 // We only need to repaint cells that were recently updated.
                 if( cells[i][j].needsPaintUpdate() )
                 {
+
                     if( cells[i][j].isShaded() )
+                    {
+                        graphics.setColor( Color.GREEN );
+                        // Draw the rectangle(topleftX,topleftY,width,height).
+                        graphics.fillRect( j * cellLength + 2, i * cellLength
+                                + 2, cellLength - 4, cellLength - 4 );
+                    }
+                    else if( cells[i][j].isBlinkingShaded() )
                     {
                         graphics.setColor( Color.blue );
                         // Draw the rectangle(topleftX,topleftY,width,height).
-                        graphics.fillRect( j * cellLength, i * cellLength,
-                                cellLength, cellLength );
+                        graphics.fillRect( j * cellLength + 2, i * cellLength
+                                + 2, cellLength - 4, cellLength - 4 );
+                    }
+                    else
+                    {
+                        graphics.clearRect( j * cellLength + 2, i * cellLength
+                                + 2, cellLength - 4, cellLength - 4 );
                     }
 
                     // Draw the text indicating the cell location.
@@ -226,7 +242,7 @@ public class Grid extends JFrame
                                     + cellLength / 2 );
 
                     // Indicate to the cell that we just repainted it.
-                    //cells[i][j].setPaintWasUpdated();
+                    cells[i][j].setPaintWasUpdated();
                 }
             }
         }
@@ -266,6 +282,7 @@ public class Grid extends JFrame
      */
     public Cell getCell( int x, int y )
     {
+        System.out.println( "grid.getCell(" + x + ", " + y + ")" );
         int arrayX = convertCoordToArrayX( x );
         int arrayY = convertCoordToArrayY( y );
         if( arrayY + 1 > getNumRows() || arrayX + 1 > getNumColumns() )
@@ -313,7 +330,7 @@ public class Grid extends JFrame
      */
     private int convertCoordToArrayY( int y )
     {
-        return y - 1 + rows - 1;
+        return Math.abs( y - rows );
     }
 
     /**
