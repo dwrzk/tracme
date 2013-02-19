@@ -106,7 +106,7 @@ public class SampleProgram
             samples.get( samples.size() - 1 ).getSamples().add( newSample );
             
             try{
-            Thread.sleep(100);
+            Thread.sleep(500);
             }
             catch(Exception e)
             {

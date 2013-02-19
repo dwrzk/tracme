@@ -358,8 +358,8 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         save.setEnabled( false );
 
         // Create the grid and set the blinking state for the first cell.
-        //grid = new Grid( prog.getGridSizeX(), prog.getGridSizeY() );
-        //grid.setBlinking( prog.getGridX(), prog.getGridY() );
+        grid = new Grid( prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
 
         return;
 
@@ -450,7 +450,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
 
-        //grid.setBlinking( prog.getGridX(), prog.getGridY() );
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
 
     }
 
@@ -464,7 +464,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         commentArea.append( "Sample Location changed to: (" + prog.getGridX()
                 + "," + prog.getGridY() + ")\n" );
 
-        //grid.setBlinking( prog.getGridX(), prog.getGridY() );
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
     }
 
     public void actionPerformed( ActionEvent evt )
@@ -602,7 +602,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         ( (SpinnerNumberModel)xSpinner.getModel() ).setMaximum( (Integer)prog
                 .getGridSizeX() );
 
-        //grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
     }
 
     public void updateGridY()
@@ -614,7 +614,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         ( (SpinnerNumberModel)ySpinner.getModel() ).setMaximum( (Integer)prog
                 .getGridSizeY() );
 
-        //grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
     }
 
     public void runEvent()
@@ -678,7 +678,8 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
                 + prog.getGridY() + ") is finished\n" );
         
         // Shade that cell to indicate that we already sampled there.
-        //grid.getCell( prog.getGridX(), prog.getGridY() ).setShaded( true );
+        grid.getCell( prog.getGridX(), prog.getGridY() ).stopBlinking();
+        grid.getCell( prog.getGridX(), prog.getGridY() ).setShaded( true );
 
     }
 
