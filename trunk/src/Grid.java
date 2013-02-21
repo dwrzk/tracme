@@ -171,6 +171,8 @@ public class Grid extends JFrame
         mainPanel.setSize( 600, 680 );
         add( mainPanel );
 
+        clearScreen = true;
+
         // setBounds(100,100,300,100);
         setLocation( 800, 50 );
         setSize( 800, 700 );
@@ -191,6 +193,14 @@ public class Grid extends JFrame
     public void paint( Graphics g )
     {
         Graphics2D graphics = (Graphics2D)mainPanel.getGraphics();
+
+        if( clearScreen )
+        {
+            graphics.clearRect( 0, 0, mainPanel.getWidth(),
+                    mainPanel.getHeight() );
+
+            clearScreen = false;
+        }
 
         // Draw the vertical lines for the grid.
         for( int i = 0; i < ( columns + 1 ) * cellLength; i += cellLength )
@@ -363,6 +373,9 @@ public class Grid extends JFrame
         rows = y;
         cellLength = 50;
         oneBlink = true;
+        clearScreen = true;
+
+        //setBlinking( 1, 1 );
 
         repaint();
     }
@@ -403,6 +416,8 @@ public class Grid extends JFrame
 
     /** Indicates if only one cell can blink at a time. */
     private boolean oneBlink;
+
+    private boolean clearScreen;
 
     /**
      * The class version number used during deserialization to verify that the
