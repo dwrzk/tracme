@@ -48,18 +48,14 @@ public class LocalizationProgram
         wifiScanner = null;
     }
 
-    /*private static void test()
-    {
-        Testing test = new Testing( "brunato_data.txt", "train_p0.5.txt" );
-        for( int i = 10; i <= 100; i += 10 )
-            for( int j = 10; j <= 100; j += 10 )
-            {
-                test.setNumClasses( i, j );
-                test.predict( "test_p0.5.txt" );
-            }
-
-        System.out.println( "DONE!" );
-    }*/
+    /*
+     * private static void test() { Testing test = new Testing(
+     * "brunato_data.txt", "train_p0.5.txt" ); for( int i = 10; i <= 100; i +=
+     * 10 ) for( int j = 10; j <= 100; j += 10 ) { test.setNumClasses( i, j );
+     * test.predict( "test_p0.5.txt" ); }
+     * 
+     * System.out.println( "DONE!" ); }
+     */
 
     /**
      * Runs the main program which will handle the localization data.
@@ -68,31 +64,46 @@ public class LocalizationProgram
     {
         // Load the AP table into memory for mapping the BSSID with our assigned
         // id.
-        apTable = new APTable( true );
-        apTable.loadTable( "test.txt" );
+        /*apTable = new APTable( true );
+        apTable.loadTable( "CP_APTable Fix2.txt" );
 
         wifiScanner = new UbuntuScanner();
-        wifiScanner.scan();
 
-        String nameOfRawFile = "test.txt"; // e.g., "brunato_data.txt" (raw file
-                                           // must be
-        // located in the same folder with
-        // MainTesting.java
-        String nameOfTrainFile = "test_train.txt"; // e.g., "train_p0.5.txt"
+        // Scan the area for a list of APs and their corresponding signal
+        // strengths.
+        Sample newSample = new Sample();
 
-        int nX = 6; // number of classes along the x dimension;
-        int nY = 6; // number of classes along the y dimension
+        // Set the output of the WiFi scanner to the new sample for this
+        // cell.
+        newSample.setScan( wifiScanner.scan() );
 
-        // e.g., if map is a grid of gridX x gridY = 11 x 15, then nX = gridX -
-        // 1 = 10, nY = gridY -1 = 14
+        // Map all AP BSSID to its unique ID from the AP table.
+        apTable.mapAPsToID( newSample.getScan(), false );*/
+        
+        
+
+        String nameOfRawFile = "DexterLawnNthUbFix2.txt"; // e.g.,
+                                                          // "brunato_data.txt"
+                                                          // (raw file
+
+        String nameOfTrainFile = "train_p0.0_sub_0.8.txt"; // e.g.,
+                                                           // "train_p0.5.txt"
+
+        int nX = 100; // number of classes along the x dimension;
+        int nY = 100; // number of classes along the y dimension
 
         Testing test = new Testing( nameOfRawFile, nameOfTrainFile );
         test.setNumClasses( nX, nY );
 
-        double[] newSample = {0,0}; // a new sample reading
-        double[] location = test.getEstLocation( newSample ); // estimated location
-                                                         // for newSample
-
+        //double[] sampleVals = { 20, 18, 19, 21, 21, 26, 25, 24, 30, 40 }; //1,1
+        //double[] sampleVals = {27,25,21,25,21,25,0,0,37,37};//3,3
+        //double[] sampleVals = {20,20,22,19,21,21,0,14,35,34};//4,3
+        //double[] sampleVals = {39,37,30,31,31,38,25,0,33,33}; //5,5 (not correct)
+        double[] sampleVals = {39,39,29,30,30,39,0,0,33,34}; //5,5 (correct)
+        
+        
+        //double[] sampleVals = new double[apTable.getAPTable().size()];
+        double[] location = test.getEstLocation( sampleVals );
 
         return location;
     }

@@ -603,6 +603,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
                 .getGridSizeX() );
 
         grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
     }
 
     public void updateGridY()
@@ -615,6 +616,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
                 .getGridSizeY() );
 
         grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setBlinking( prog.getGridX(), prog.getGridY() );
     }
 
     public void runEvent()
