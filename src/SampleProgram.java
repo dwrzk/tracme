@@ -66,8 +66,8 @@ public class SampleProgram
         }
         else if( osName.equals( "Linux" ) )
         {
-            // Create the airport scanner for Ubuntu.
-            wifiScanner = new UbuntuScanner();
+            // Create the airport scanner for Linux.
+            wifiScanner = new LinuxScanner();
         }
         else if ( osName.indexOf("Win") >= 0 )
         {

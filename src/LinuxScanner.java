@@ -9,13 +9,12 @@ import java.util.regex.Matcher;
  * 
  * @author James Humphrey
  */
-public class UbuntuScanner extends WifiScanner
+public class LinuxScanner extends WifiScanner
 {
-
     /**
-     * Initialize the ubuntu scanner for the current scan.
+     * Initialize the linux scanner for the current scan.
      */
-    public UbuntuScanner()
+    public LinuxScanner()
     {
         enumerateWirelessInterfaces();
     }

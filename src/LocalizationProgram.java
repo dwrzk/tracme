@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
@@ -46,29 +47,63 @@ public class LocalizationProgram
     {
         apTable = null;
         wifiScanner = null;
-    }
 
-    /*
-     * private static void test() { Testing test = new Testing(
-     * "brunato_data.txt", "train_p0.5.txt" ); for( int i = 10; i <= 100; i +=
-     * 10 ) for( int j = 10; j <= 100; j += 10 ) { test.setNumClasses( i, j );
-     * test.predict( "test_p0.5.txt" ); }
-     * 
-     * System.out.println( "DONE!" ); }
-     */
+        // Get a string name of the current operating system so we can call the
+        // correct procedures.
+        String osName = System.getProperty( "os.name", null );
+
+        // Search for the correct scanner depending on the operating system.
+        if( osName.equals( "Mac OS X" ) )
+        {
+            // Create the airport scanner on the MAC.
+            wifiScanner = new AirportScanner();
+        }
+        else if( osName.equals( "Linux" ) )
+        {
+            // Create the scanner for Linux.
+            wifiScanner = new LinuxScanner();
+        }
+        else if( osName.indexOf( "Win" ) >= 0 )
+        {
+            wifiScanner = new WindowsScanner();
+            System.out.println( "Windows Operating System" );
+            // System.exit(0);
+        }
+        else
+        {
+            // wifiScanner = new WindowsScanner();
+            // An invalid operating system was detected.
+            System.out.println( "Unsupported operating system" );
+            System.exit( 0 );
+        }
+
+        // Load the AP table into memory for mapping the BSSID with our assigned
+        // id.
+        // System.out.println( "\007" );
+        apTable = new APTable( true );
+        apTable.loadTable( "CP_APTable_Fix2.txt" );
+
+        // Create the sample values double array that gets passed to the predict
+        // method.
+        sampleVals = new double[apTable.getAPTable().size()];
+
+        String nameOfRawFile = "DexterLawnNthUbFix2.txt";
+        String nameOfTrainFile = "train_p0.0_sub_0.8.txt";
+
+        int nX = 100; // number of classes along the x dimension;
+        int nY = 100; // number of classes along the y dimension
+
+        test = new Testing( nameOfRawFile, nameOfTrainFile );
+        test.setNumClasses( nX, nY );
+    }
 
     /**
      * Runs the main program which will handle the localization data.
+     * 
+     * @return the predicted cell location within the grid.
      */
     public double[] predictLoc()
     {
-        // Load the AP table into memory for mapping the BSSID with our assigned
-        // id.
-        /*apTable = new APTable( true );
-        apTable.loadTable( "CP_APTable Fix2.txt" );
-
-        wifiScanner = new UbuntuScanner();
-
         // Scan the area for a list of APs and their corresponding signal
         // strengths.
         Sample newSample = new Sample();
@@ -78,38 +113,53 @@ public class LocalizationProgram
         newSample.setScan( wifiScanner.scan() );
 
         // Map all AP BSSID to its unique ID from the AP table.
-        apTable.mapAPsToID( newSample.getScan(), false );*/
-        
-        
+        apTable.mapAPsToID( newSample.getScan(), false );
 
-        String nameOfRawFile = "DexterLawnNthUbFix2.txt"; // e.g.,
-                                                          // "brunato_data.txt"
-                                                          // (raw file
+        // Remove all APs from the sample that were not mapped (with -1 ID).
+        newSample.setScan( apTable.removeUnmappedAps( newSample.getScan() ) );
 
-        String nameOfTrainFile = "train_p0.0_sub_0.8.txt"; // e.g.,
-                                                           // "train_p0.5.txt"
+        // Sort the APs within the sample by increasing ID value.
+        Collections.sort( newSample.getScan(), new AccessPointIDComparator() );
 
-        int nX = 100; // number of classes along the x dimension;
-        int nY = 100; // number of classes along the y dimension
+        // Add all of the zero AP's (one's that were not detected in this scan).
+        apTable.addZeroAPs( newSample.getScan() );
 
-        Testing test = new Testing( nameOfRawFile, nameOfTrainFile );
-        test.setNumClasses( nX, nY );
+        // Copy the signal strength values from the scan to the double array.
+        System.out.print( "Signal strengths found:\n{" );
+        for( int i = 0; i < newSample.getScan().size(); i++ )
+        {
+            sampleVals[i] = newSample.getScan().get( i ).getRSSI();
 
-        //double[] sampleVals = { 20, 18, 19, 21, 21, 26, 25, 24, 30, 40 }; //1,1
-        //double[] sampleVals = {27,25,21,25,21,25,0,0,37,37};//3,3
-        //double[] sampleVals = {20,20,22,19,21,21,0,14,35,34};//4,3
-        //double[] sampleVals = {39,37,30,31,31,38,25,0,33,33}; //5,5 (not correct)
-        double[] sampleVals = {39,39,29,30,30,39,0,0,33,34}; //5,5 (correct)
-        
-        
-        //double[] sampleVals = new double[apTable.getAPTable().size()];
-        double[] location = test.getEstLocation( sampleVals );
+            if( i == newSample.getScan().size() - 1 )
+            {
+                System.out.println( sampleVals[i] + "}" );
+            }
+            else
+            {
+                System.out.print( sampleVals[i] + ", " );
+            }
+        }
 
-        return location;
+        // Call the predict method to get our estimated location within the
+        // grid.
+        return test.getEstLocation( sampleVals );
     }
 
-    private APTable apTable; // The table of access points loaded from a file.
-    private WifiScanner wifiScanner; // The generic WiFi scanner used for
-                                     // generating a sample list of access
-                                     // points with RSSID values.
+    /** The table of access points loaded from a file. */
+    private APTable apTable;
+
+    /**
+     * The generic WiFi scanner used for generating a sample list of access
+     * points with RSSID values.
+     */
+    private WifiScanner wifiScanner;
+
+    /**
+     * The list of sample values that correspond to the signal strength of the
+     * APs of one sample. This will be filled with the most recent sample and
+     * passed to the prediction method.
+     */
+    private double[] sampleVals;
+
+    private Testing test;
 }
