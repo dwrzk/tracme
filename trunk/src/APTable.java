@@ -71,7 +71,36 @@ public class APTable
     public ArrayList<AccessPoint> removeUnmappedAps(
             ArrayList<AccessPoint> apList )
     {
-        return null;
+        ArrayList<AccessPoint> newAPs = new ArrayList<AccessPoint>();
+        for( int i = 0; i < apList.size(); i++ )
+        {
+            if( apList.get( i ).getID() != -1 )
+            {
+                newAPs.add( apList.get( i ) );
+            }
+        }
+
+        return newAPs;
+    }
+
+    public void addZeroAPs( ArrayList<AccessPoint> apList )
+    {
+        if( apList.size() != aps.size() )
+        {
+            for( int k = 0; k < aps.size(); k++ )
+            {
+                if( k > apList.size() - 1 || apList.get( k ).getID() != k + 1 )
+                {
+                    AccessPoint zeroAP = new AccessPoint();
+                    zeroAP.setID( k + 1 );
+                    zeroAP.setBSSID( aps.get( k ).getBSSID() );
+                    zeroAP.setRSSI( 0 );
+                    apList.add( k, zeroAP );
+                    System.out.println( "Adding zero sample: " + zeroAP.getID()
+                            + ":" + 0 + ";" );
+                }
+            }
+        }
     }
 
     /**
