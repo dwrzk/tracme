@@ -37,7 +37,6 @@ public class APTable
         // Get the ID number of the last entry in the table (should be the
         // highest value).
         int topID = 0;
-        ;
 
         // The first AP added should always begin with a value of 1.
         if( aps.size() > 0 )
@@ -68,21 +67,43 @@ public class APTable
         }
     }
 
+    /**
+     * Removes all APs with a -1 ID (unmapped) from the list and returns a new
+     * list.
+     * 
+     * @param apList
+     *            The list to remove all unmapped APs.
+     * @return the new AP list with only the mapped APs.
+     */
     public ArrayList<AccessPoint> removeUnmappedAps(
             ArrayList<AccessPoint> apList )
     {
+        System.out.println("Entering removeUnmappedAps with ap list size: " + apList.size());
         ArrayList<AccessPoint> newAPs = new ArrayList<AccessPoint>();
         for( int i = 0; i < apList.size(); i++ )
         {
             if( apList.get( i ).getID() != -1 )
             {
                 newAPs.add( apList.get( i ) );
+                System.out.println("AP found that is not -1 keeping it in new AP list");
+            }
+            else
+            {
+                System.out.println( "Removing Unmapped AP with\n  SSID: "
+                        + apList.get( i ).getSSID() + "\n  BSSID: "
+                        + apList.get( i ).getBSSID() );
             }
         }
 
         return newAPs;
     }
 
+    /**
+     * Add all non-existing APs to the list with a signal strength of 0.
+     * 
+     * @param apList
+     *            The AP list to add the zero APs.
+     */
     public void addZeroAPs( ArrayList<AccessPoint> apList )
     {
         if( apList.size() != aps.size() )
@@ -278,12 +299,21 @@ public class APTable
         return tableStr;
     }
 
-    private ArrayList<AccessPoint> aps; // A list of APs stored in the table.
-    private String tableName; // The file name of the AP table that is loaded.
-    boolean writeDebugFile; // Indicates if we want to write another debug file
-                            // which will include more information about the
-                            // APs.
-    private boolean multiAttempts = false; // Flag to see if there were multiple
-                                           // attempts of loading the access
-                                           // point table.
+    /** A list of APs stored in the table. */
+    private ArrayList<AccessPoint> aps;
+
+    /** The file name of the AP table that is loaded. */
+    private String tableName;
+
+    /**
+     * Indicates if we want to write another debug file which will include more
+     * information about the APs.
+     */
+    boolean writeDebugFile;
+
+    /**
+     * Flag to see if there were multiple attempts of loading the access point
+     * table.
+     */
+    private boolean multiAttempts = false;
 }
