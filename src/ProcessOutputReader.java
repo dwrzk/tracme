@@ -43,6 +43,11 @@ public class ProcessOutputReader
             int scanExitVal = scanProc.waitFor();
             System.out.println( "\"" + exec + "\" Exit Value: " + scanExitVal );
 
+            if( scanExitVal == 255 )
+            {
+                return runProgram( exec );
+            }
+
         }
         catch( Throwable t )
         {
