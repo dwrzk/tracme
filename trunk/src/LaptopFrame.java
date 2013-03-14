@@ -602,7 +602,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         ( (SpinnerNumberModel)xSpinner.getModel() ).setMaximum( (Integer)prog
                 .getGridSizeX() );
 
-        grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setGrid( prog.getGridSizeX(), prog.getGridSizeY() );
         grid.setBlinking( prog.getGridX(), prog.getGridY() );
     }
 
@@ -615,7 +615,7 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
         ( (SpinnerNumberModel)ySpinner.getModel() ).setMaximum( (Integer)prog
                 .getGridSizeY() );
 
-        grid.setGrid(  prog.getGridSizeX(), prog.getGridSizeY() );
+        grid.setGrid( prog.getGridSizeX(), prog.getGridSizeY() );
         grid.setBlinking( prog.getGridX(), prog.getGridY() );
     }
 
@@ -678,10 +678,15 @@ public class LaptopFrame extends JFrame implements SamplingGUI, ActionListener,
 
         commentArea.append( "Sample for location: (" + prog.getGridX() + ","
                 + prog.getGridY() + ") is finished\n" );
-        
+
         // Shade that cell to indicate that we already sampled there.
         grid.getCell( prog.getGridX(), prog.getGridY() ).stopBlinking();
         grid.getCell( prog.getGridX(), prog.getGridY() ).setShaded( true );
+
+        // Play an alert sound to indicate to the user that we are done
+        // sampling.
+        AlertSound as = new AlertSound();
+        as.playClip( null );
 
     }
 

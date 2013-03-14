@@ -1,10 +1,5 @@
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * The main localization program that handles the training model data received
@@ -23,30 +18,20 @@ public class LocalizationProgram
     public static void main( String[] args )
     {
         // Create the main program and run it.
-        LocalizationProgram prog = new LocalizationProgram();
-
-        while( true )
-        {
-            double[] loc = prog.predictLoc();
-
-            System.out.println( "Predicted location: (" + loc[0] + ", "
-                    + loc[1] + ")" );
-
-            try
-            {
-                Thread.sleep( 500 );
-            }
-            catch( Exception e )
-            {
-                System.out.println( "Failed to sleep" );
-            }
-        }
+        new LocalizationProgram();
     }
 
     public LocalizationProgram()
     {
+        long startTime = System.currentTimeMillis();
+
         apTable = null;
         wifiScanner = null;
+
+        // Create the log file for localization to output to.
+        localizationLog = new WriteFile( "Localization_Log.txt", true );
+
+        localizationLog.writeToFile( "Running localization program...\n" );
 
         // Get a string name of the current operating system so we can call the
         // correct procedures.
@@ -79,31 +64,145 @@ public class LocalizationProgram
 
         // Load the AP table into memory for mapping the BSSID with our assigned
         // id.
-        // System.out.println( "\007" );
-        apTable = new APTable( true );
-        apTable.loadTable( "CP_APTable_Fix2.txt" );
+        apTable = new APTable( false );
+        apTable.loadTable( "SMWAP_Table.txt" );
 
-        // Create the sample values double array that gets passed to the predict
-        // method.
-        sampleVals = new double[apTable.getAPTable().size()];
-
-        String nameOfRawFile = "DexterLawnNthUbFix2.txt";
-        String nameOfTrainFile = "train_p0.0_sub_0.8.txt";
+        String nameOfRawFile = "DexLawnNthUbSMW.txt";
+        String nameOfTrainFile = "train_p0.0.txt_sub_1.0.1.txt";
 
         int nX = 100; // number of classes along the x dimension;
         int nY = 100; // number of classes along the y dimension
 
-        test = new Testing( nameOfRawFile, nameOfTrainFile );
-        test.setNumClasses( nX, nY );
+        localize = new Testing( nameOfRawFile, nameOfTrainFile );
+        localize.setNumClasses( nX, nY );
+
+        scanMethod = ScanMethod.ONE_SCAN_ONE_PREDICT;
+        double[] loc = null;
+
+        if( scanMethod == ScanMethod.ONE_SCAN_ONE_PREDICT )
+        {
+            System.out.println( "Running normal one scan, one predict" );
+            localizationLog
+                    .writeToFile( "Running normal one scan, one predict\n" );
+            loc = oneScanOnePredict();
+        }
+        else if( scanMethod == ScanMethod.MULTI_SCAN_ONE_PREDICT )
+        {
+            System.out.println( "Running multi scan, one predict" );
+            localizationLog.writeToFile( "Running multi scan, one predict\n" );
+            loc = multiScanOnePredict();
+        }
+        else if( scanMethod == ScanMethod.MULTI_SCAN_MULTI_PREDICT )
+        {
+            System.out.println( "Running multi one scan, multi predict" );
+            localizationLog
+                    .writeToFile( "Running multi one scan, multi predict\n" );
+            loc = multiScanMultiPredict();
+        }
+        else
+        {
+            System.out.println( "Error: Unsupported scan method" );
+            System.exit( -1 );
+        }
+
+        // Output the predicted location to the console and log.
+        System.out.println( "Predicted location: (" + loc[0] + ", " + loc[1]
+                + ")" );
+        localizationLog.writeToFile( "Predicted location: (" + loc[0] + ", "
+                + loc[1] + ")\n" );
+
+        System.out.println( "End localization program" );
+        localizationLog.writeToFile( "End localization program\n" );
+
+        long endTime = System.currentTimeMillis();
+        System.out.println( "Duration: " + ( ( endTime - startTime ) / 1000 )
+                + " seconds\n" );
+        localizationLog.writeToFile( "Duration: "
+                + ( ( endTime - startTime ) / 1000 ) + " seconds\n" );
     }
 
-    /**
-     * Runs the main program which will handle the localization data.
-     * 
-     * @return the predicted cell location within the grid.
-     */
-    public double[] predictLoc()
+    public double[] oneScanOnePredict()
     {
+        return predictLoc( doScan() );
+    }
+
+    public double[] multiScanOnePredict()
+    {
+        ArrayList<double[]> multiScans = new ArrayList<double[]>();
+        int numScans = 3;
+        for( int i = 0; i < numScans; i++ )
+        {
+            multiScans.add( doScan() );
+        }
+
+        // Calculate the average of all scans.
+        double[] avgOfScans = new double[apTable.getAPTable().size()];
+        for( int i = 0; i < apTable.getAPTable().size(); i++ )
+        {
+            avgOfScans[i] = 0;
+            for( int j = 0; j < numScans; j++ )
+            {
+                avgOfScans[i] += multiScans.get( j )[i];
+            }
+
+            avgOfScans[i] /= numScans;
+        }
+
+        return predictLoc( avgOfScans );
+    }
+
+    // Scan 5 times find avg -> predict.
+    // After predict 5 times, avg the predictions.
+    public double[] multiScanMultiPredict()
+    {
+        ArrayList<double[]> predictions = new ArrayList<double[]>();
+
+        int totalPredictionAvgs = 5;
+        for( int g = 0; g < totalPredictionAvgs; g++ )
+        {
+            ArrayList<double[]> multiScans = new ArrayList<double[]>();
+            int numScans = 5;
+            for( int i = 0; i < numScans; i++ )
+            {
+                multiScans.add( doScan() );
+            }
+
+            // Calculate the average of all scans.
+            double[] avgOfScans = new double[apTable.getAPTable().size()];
+            for( int i = 0; i < apTable.getAPTable().size(); i++ )
+            {
+                avgOfScans[i] = 0;
+                for( int j = 0; j < numScans; j++ )
+                {
+                    avgOfScans[i] += multiScans.get( j )[i];
+                }
+
+                avgOfScans[i] /= numScans;
+            }
+
+            predictions.add( predictLoc( avgOfScans ) );
+        }
+
+        double[] avgPredicts = new double[2];
+        avgPredicts[0] = avgPredicts[1] = 0;
+        for( int i = 0; i < totalPredictionAvgs; i++ )
+        {
+            avgPredicts[0] += predictions.get( i )[0];
+            avgPredicts[1] += predictions.get( i )[1];
+        }
+
+        avgPredicts[0] /= totalPredictionAvgs;
+        avgPredicts[1] /= totalPredictionAvgs;
+
+        return avgPredicts;
+    }
+
+    public double[] doScan()
+    {
+        // Create the sample values double array that gets passed to the predict
+        // method.
+        double[] sampleVals = new double[apTable.getAPTable().size()];
+
         // Scan the area for a list of APs and their corresponding signal
         // strengths.
         Sample newSample = new Sample();
@@ -140,9 +239,28 @@ public class LocalizationProgram
             }
         }
 
+        try
+        {
+            Thread.sleep( 500 );
+        }
+        catch( Exception e )
+        {
+            System.out.println( "Failed to sleep" );
+        }
+
+        return sampleVals;
+    }
+
+    /**
+     * Runs the main program which will handle the localization data.
+     * 
+     * @return the predicted cell location within the grid.
+     */
+    public double[] predictLoc( double[] scan )
+    {
         // Call the predict method to get our estimated location within the
         // grid.
-        return test.getEstLocation( sampleVals );
+        return localize.getEstLocation( scan );
     }
 
     /** The table of access points loaded from a file. */
@@ -159,7 +277,24 @@ public class LocalizationProgram
      * APs of one sample. This will be filled with the most recent sample and
      * passed to the prediction method.
      */
-    private double[] sampleVals;
+    // private double[] sampleVals;
 
-    private Testing test;
+    /**
+     * The interface to the localization program by Dr. Tran.
+     */
+    private Testing localize;
+
+    /**
+     * Indicates the type of scan we want to do.
+     * 
+     */
+    private enum ScanMethod
+    {
+        ONE_SCAN_ONE_PREDICT, MULTI_SCAN_ONE_PREDICT, MULTI_SCAN_MULTI_PREDICT
+    };
+
+    private ScanMethod scanMethod = ScanMethod.ONE_SCAN_ONE_PREDICT;
+
+    private WriteFile localizationLog = null; // Log file that outputs the
+                                              // predict location.
 }

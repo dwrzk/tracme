@@ -185,7 +185,15 @@ public class LinuxScanner extends WifiScanner
             // Get the SSID (name) of the AP.
             lineStr = sc.nextLine();
             lineStr = lineStr.trim();
-            String ssid = lineStr.substring( 7, lineStr.length() - 1 );
+            String ssid = "";
+            try
+            {
+                ssid = lineStr.substring( 7, lineStr.length() - 1 );
+            }
+            catch( Exception e )
+            {
+                ssid = "Unknown";
+            }
             // System.out.println( "SSID: " + ssid );
 
             // Create a new access point and fill in the data from the

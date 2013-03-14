@@ -137,6 +137,11 @@ public class APTable
     public void mapAPsToID( ArrayList<AccessPoint> apList,
             boolean autoIncludeNew )
     {
+        if( apList == null )
+        {
+            return;
+        }
+        
         for( int i = 0; i < apList.size(); i++ )
         {
             for( int j = 0; j < aps.size(); j++ )
