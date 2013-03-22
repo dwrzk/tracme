@@ -48,8 +48,10 @@ public class WindowsScanner extends WifiScanner
 	  **/
 	   
 	   ProcessOutputReader por = new ProcessOutputReader();
-       String strOut = por.runProgram("WinScan.exe");
-    		   //( "C:\\Users\\Kwaku\\Documents\\Visual Studio 2012\\Projects\\WinScan\\Debug\\WinScan.exe" );
+	   //Make sure to point to the absolute path of the file. (As of now, the local version is not working
+       String strOut = por.runProgram("C:\\Users\\Kwaku\\workspace\\tracme\\trunk\\src\\WinScan.exe"); 
+    	
+       
        if( strOut.isEmpty() )
        {
            return null;
@@ -58,9 +60,23 @@ public class WindowsScanner extends WifiScanner
        // Create a new list so we can start with new RSSI data.
        apList = new ArrayList<AccessPoint>();
        
+       
        parseScan( strOut );
        
+       
       return apList;
+   }
+   
+   public boolean isInt( String val )
+   {
+	   try {
+		   Integer.parseInt(val);
+		   return true;
+	   }
+	   catch (NumberFormatException ex) {
+		   System.out.println("Not a number");
+		   return false;
+	   }
    }
    
    /**
@@ -84,12 +100,25 @@ public class WindowsScanner extends WifiScanner
 		   }
 		   
 		   Scanner lineScan = new Scanner( lineStr );
+		  
+		   String ssid = lineScan.next();
+		   
+           System.out.println( "SSID: " + ssid );
 		   
            String bssid = lineScan.next();
+           //Set to upper case
+		   bssid = bssid.toUpperCase();
            System.out.println( "BSSID: " + bssid );
            
-           int rssi = RSSI_MAX + lineScan.nextInt();
-           System.out.println( "RSSI: " + rssi );
+           //System.out.println("RSSI: " + lineScan.next());
+           String st_rssi = lineScan.next();
+           while (!isInt(st_rssi)) {
+        	     st_rssi = lineScan.next();
+           }
+           
+           
+           
+           int rssi = RSSI_MAX + Integer.parseInt(st_rssi);
            // Do a sanity check to make sure that the BSSID has the correct
            // format.
            if( bssid.length() != 17 || bssid.charAt( 2 ) != ':'
@@ -100,6 +129,7 @@ public class WindowsScanner extends WifiScanner
                continue;
            }
 		
+           
            // Create a new access point and fill in the data from the
            // current line.
            AccessPoint ap = new AccessPoint();
@@ -108,7 +138,7 @@ public class WindowsScanner extends WifiScanner
            // map it into the table.
            ap.setID( -1 );
 
-           //ap.setSSID( ssid );
+           ap.setSSID( ssid );
            ap.setBSSID( bssid );
            ap.setRSSI( rssi );
            
@@ -117,6 +147,8 @@ public class WindowsScanner extends WifiScanner
            ap.setSecurity( "Unknown" );
            
            apList.add(ap);
+           
+           System.out.println("AP List is: " + apList.size());
            
            lineScan.close();
 	   }
